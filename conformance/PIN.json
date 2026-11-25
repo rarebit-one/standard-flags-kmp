@@ -1,0 +1,15 @@
+{
+  "repository": "rarebit-one/standard_flags",
+  "commit": "49c556592b0e9ba71beec29b04991fead91c228a",
+  "files": {
+    "README.md": "sha256:83844f04768a4e3601044c1220d0118d60bb4172ec12d1dd410793266bbc52e8",
+    "schema/fixture.schema.json": "sha256:f4662ba2ae1d3289771d62f5047c04b19b24c8811fae1144766e50aa797c62f8",
+    "versions/version_ranges.json": "sha256:c845abb5b830ff534aa3ecc925672c27a34d5ed5e2a872bc7c4c15019ffe2788",
+    "wire/client_state.json": "sha256:ad37d626d9186696fdbc7831fc13fe494b20d636bd6ba3cde9d2b1f8d4704406",
+    "wire/delivery.json": "sha256:b1821db5d76c4b69b24d3af6459747c1de346babb6619c044684c4cc8e34c06f"
+  },
+  "optional": [
+    "wire/client_status.json",
+    "wire/manifest_check.json"
+  ]
+}

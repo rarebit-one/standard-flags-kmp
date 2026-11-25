@@ -1,0 +1,105 @@
+public abstract interface class one/rarebit/flags/status/ClientStatus {
+	public static final field Companion Lone/rarebit/flags/status/ClientStatus$Companion;
+	public abstract fun getDetails ()Lone/rarebit/flags/status/StatusDetails;
+}
+
+public final class one/rarebit/flags/status/ClientStatus$Companion {
+	public final fun getInitial ()Lone/rarebit/flags/status/ClientStatus;
+}
+
+public final class one/rarebit/flags/status/ClientStatus$Ok : one/rarebit/flags/status/ClientStatus {
+	public fun <init> (Lone/rarebit/flags/status/StatusDetails;)V
+	public final fun component1 ()Lone/rarebit/flags/status/StatusDetails;
+	public final fun copy (Lone/rarebit/flags/status/StatusDetails;)Lone/rarebit/flags/status/ClientStatus$Ok;
+	public static synthetic fun copy$default (Lone/rarebit/flags/status/ClientStatus$Ok;Lone/rarebit/flags/status/StatusDetails;ILjava/lang/Object;)Lone/rarebit/flags/status/ClientStatus$Ok;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getDetails ()Lone/rarebit/flags/status/StatusDetails;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class one/rarebit/flags/status/ClientStatus$Unknown : one/rarebit/flags/status/ClientStatus {
+	public fun <init> ()V
+	public fun <init> (Lone/rarebit/flags/status/StatusDetails;)V
+	public synthetic fun <init> (Lone/rarebit/flags/status/StatusDetails;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Lone/rarebit/flags/status/StatusDetails;
+	public final fun copy (Lone/rarebit/flags/status/StatusDetails;)Lone/rarebit/flags/status/ClientStatus$Unknown;
+	public static synthetic fun copy$default (Lone/rarebit/flags/status/ClientStatus$Unknown;Lone/rarebit/flags/status/StatusDetails;ILjava/lang/Object;)Lone/rarebit/flags/status/ClientStatus$Unknown;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getDetails ()Lone/rarebit/flags/status/StatusDetails;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class one/rarebit/flags/status/ClientStatus$UpgradeRecommended : one/rarebit/flags/status/ClientStatus {
+	public fun <init> (Lone/rarebit/flags/status/StatusDetails;Ljava/lang/String;)V
+	public final fun component1 ()Lone/rarebit/flags/status/StatusDetails;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun copy (Lone/rarebit/flags/status/StatusDetails;Ljava/lang/String;)Lone/rarebit/flags/status/ClientStatus$UpgradeRecommended;
+	public static synthetic fun copy$default (Lone/rarebit/flags/status/ClientStatus$UpgradeRecommended;Lone/rarebit/flags/status/StatusDetails;Ljava/lang/String;ILjava/lang/Object;)Lone/rarebit/flags/status/ClientStatus$UpgradeRecommended;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getDetails ()Lone/rarebit/flags/status/StatusDetails;
+	public final fun getEnforceAt ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class one/rarebit/flags/status/ClientStatus$UpgradeRequired : one/rarebit/flags/status/ClientStatus {
+	public fun <init> (Lone/rarebit/flags/status/StatusDetails;)V
+	public final fun component1 ()Lone/rarebit/flags/status/StatusDetails;
+	public final fun copy (Lone/rarebit/flags/status/StatusDetails;)Lone/rarebit/flags/status/ClientStatus$UpgradeRequired;
+	public static synthetic fun copy$default (Lone/rarebit/flags/status/ClientStatus$UpgradeRequired;Lone/rarebit/flags/status/StatusDetails;ILjava/lang/Object;)Lone/rarebit/flags/status/ClientStatus$UpgradeRequired;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getDetails ()Lone/rarebit/flags/status/StatusDetails;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class one/rarebit/flags/status/ClientStatusClient {
+	public fun <init> (Lio/ktor/client/HttpClient;Ljava/lang/String;Lone/rarebit/flags/ofrep/ClientInfo;Lone/rarebit/flags/status/ClientStatus;)V
+	public synthetic fun <init> (Lio/ktor/client/HttpClient;Ljava/lang/String;Lone/rarebit/flags/ofrep/ClientInfo;Lone/rarebit/flags/status/ClientStatus;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun check (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun getStatus ()Lkotlinx/coroutines/flow/StateFlow;
+	public final fun reportUpgradeRequired (Lone/rarebit/flags/status/ClientStatus$UpgradeRequired;)V
+}
+
+public final class one/rarebit/flags/status/ClientStatusClientKt {
+	public static final fun getUpgradeRequiredDetector ()Lio/ktor/client/plugins/api/ClientPlugin;
+}
+
+public final class one/rarebit/flags/status/ClientStatusParser {
+	public static final field INSTANCE Lone/rarebit/flags/status/ClientStatusParser;
+	public static final field UPGRADE_REQUIRED_CODE Ljava/lang/String;
+	public final fun parse (Ljava/lang/String;)Lone/rarebit/flags/status/ClientStatus;
+	public final fun parseUpgradeRequired (Ljava/lang/String;)Lone/rarebit/flags/status/ClientStatus$UpgradeRequired;
+}
+
+public final class one/rarebit/flags/status/StatusDetails {
+	public fun <init> ()V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Ljava/lang/String;
+	public final fun component5 ()Ljava/lang/String;
+	public final fun component6 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lone/rarebit/flags/status/StatusDetails;
+	public static synthetic fun copy$default (Lone/rarebit/flags/status/StatusDetails;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lone/rarebit/flags/status/StatusDetails;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getEnforceAt ()Ljava/lang/String;
+	public final fun getMinVersion ()Ljava/lang/String;
+	public final fun getPlatform ()Ljava/lang/String;
+	public final fun getRecommended ()Ljava/lang/String;
+	public final fun getStoreUrl ()Ljava/lang/String;
+	public final fun getVersion ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class one/rarebit/flags/status/UpgradeRequiredDetectorConfig {
+	public fun <init> ()V
+	public final fun getStatus ()Lone/rarebit/flags/status/ClientStatusClient;
+	public final fun setStatus (Lone/rarebit/flags/status/ClientStatusClient;)V
+}
+

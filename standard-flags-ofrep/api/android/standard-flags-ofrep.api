@@ -1,0 +1,289 @@
+public final class one/rarebit/flags/ofrep/ApplyPolicy {
+	public fun <init> ()V
+	public fun <init> (ZZ)V
+	public synthetic fun <init> (ZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Z
+	public final fun component2 ()Z
+	public final fun copy (ZZ)Lone/rarebit/flags/ofrep/ApplyPolicy;
+	public static synthetic fun copy$default (Lone/rarebit/flags/ofrep/ApplyPolicy;ZZILjava/lang/Object;)Lone/rarebit/flags/ofrep/ApplyPolicy;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getFirstPayloadAppliesLive ()Z
+	public final fun getFreshValuesAtNextLaunch ()Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class one/rarebit/flags/ofrep/Backoff {
+	public static final field Companion Lone/rarebit/flags/ofrep/Backoff$Companion;
+	public fun <init> ()V
+	public synthetic fun <init> (JJDJLkotlin/random/Random;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (JJDJLkotlin/random/Random;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun delay-1O43Jpo (ILkotlin/time/Duration;)J
+	public static synthetic fun delay-1O43Jpo$default (Lone/rarebit/flags/ofrep/Backoff;ILkotlin/time/Duration;ILjava/lang/Object;)J
+	public final fun getInitial-UwyO8pc ()J
+	public final fun getMax-UwyO8pc ()J
+	public final fun getMaxRetryAfter-UwyO8pc ()J
+	public final fun getMultiplier ()D
+}
+
+public final class one/rarebit/flags/ofrep/Backoff$Companion {
+	public final fun parseRetryAfter-3UGz1UU (Ljava/lang/String;Lio/ktor/util/date/GMTDate;)Lkotlin/time/Duration;
+	public static synthetic fun parseRetryAfter-3UGz1UU$default (Lone/rarebit/flags/ofrep/Backoff$Companion;Ljava/lang/String;Lio/ktor/util/date/GMTDate;ILjava/lang/Object;)Lkotlin/time/Duration;
+}
+
+public final class one/rarebit/flags/ofrep/BoundedBodyKt {
+	public static final fun readBounded (Lio/ktor/client/statement/HttpResponse;ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class one/rarebit/flags/ofrep/ClientHeadersConfig {
+	public fun <init> ()V
+	public final fun client (Lone/rarebit/flags/ofrep/ClientInfo;)V
+	public final fun getClient ()Lkotlin/jvm/functions/Function0;
+	public final fun setClient (Lkotlin/jvm/functions/Function0;)V
+}
+
+public final class one/rarebit/flags/ofrep/ClientInfo {
+	public static final field Companion Lone/rarebit/flags/ofrep/ClientInfo$Companion;
+	public static final field HEADER_BUILD Ljava/lang/String;
+	public static final field HEADER_PLATFORM Ljava/lang/String;
+	public static final field HEADER_VERSION Ljava/lang/String;
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/Long;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/Long;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun applyTo (Lio/ktor/http/HeadersBuilder;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/Long;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/Long;)Lone/rarebit/flags/ofrep/ClientInfo;
+	public static synthetic fun copy$default (Lone/rarebit/flags/ofrep/ClientInfo;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Long;ILjava/lang/Object;)Lone/rarebit/flags/ofrep/ClientInfo;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getBuild ()Ljava/lang/Long;
+	public final fun getFingerprint ()Ljava/lang/String;
+	public final fun getPlatform ()Ljava/lang/String;
+	public final fun getVersion ()Ljava/lang/String;
+	public fun hashCode ()I
+	public final fun isRecognised ()Z
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class one/rarebit/flags/ofrep/ClientInfo$Companion {
+	public final fun getKNOWN_PLATFORMS ()Ljava/util/Set;
+}
+
+public final class one/rarebit/flags/ofrep/ClientInfoKt {
+	public static final fun getClientHeaders ()Lio/ktor/client/plugins/api/ClientPlugin;
+}
+
+public abstract interface class one/rarebit/flags/ofrep/FetchResult {
+}
+
+public final class one/rarebit/flags/ofrep/FetchResult$Failed : one/rarebit/flags/ofrep/FetchResult {
+	public synthetic fun <init> (Ljava/lang/Integer;Lkotlin/time/Duration;Ljava/lang/Throwable;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/Integer;
+	public final fun component2-FghU774 ()Lkotlin/time/Duration;
+	public final fun component3 ()Ljava/lang/Throwable;
+	public final fun copy-Kx4hsE0 (Ljava/lang/Integer;Lkotlin/time/Duration;Ljava/lang/Throwable;)Lone/rarebit/flags/ofrep/FetchResult$Failed;
+	public static synthetic fun copy-Kx4hsE0$default (Lone/rarebit/flags/ofrep/FetchResult$Failed;Ljava/lang/Integer;Lkotlin/time/Duration;Ljava/lang/Throwable;ILjava/lang/Object;)Lone/rarebit/flags/ofrep/FetchResult$Failed;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCause ()Ljava/lang/Throwable;
+	public final fun getRetryAfter-FghU774 ()Lkotlin/time/Duration;
+	public final fun getStatus ()Ljava/lang/Integer;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class one/rarebit/flags/ofrep/FetchResult$Fresh : one/rarebit/flags/ofrep/FetchResult {
+	public fun <init> ([BLjava/lang/String;)V
+	public final fun getBody ()[B
+	public final fun getEtag ()Ljava/lang/String;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class one/rarebit/flags/ofrep/FetchResult$NotModified : one/rarebit/flags/ofrep/FetchResult {
+	public static final field INSTANCE Lone/rarebit/flags/ofrep/FetchResult$NotModified;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class one/rarebit/flags/ofrep/FetchResult$TooLarge : one/rarebit/flags/ofrep/FetchResult {
+	public static final field INSTANCE Lone/rarebit/flags/ofrep/FetchResult$TooLarge;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class one/rarebit/flags/ofrep/FetchResult$Unauthorized : one/rarebit/flags/ofrep/FetchResult {
+	public fun <init> (I)V
+	public final fun component1 ()I
+	public final fun copy (I)Lone/rarebit/flags/ofrep/FetchResult$Unauthorized;
+	public static synthetic fun copy$default (Lone/rarebit/flags/ofrep/FetchResult$Unauthorized;IILjava/lang/Object;)Lone/rarebit/flags/ofrep/FetchResult$Unauthorized;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getStatus ()I
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class one/rarebit/flags/ofrep/FetchStatus {
+}
+
+public final class one/rarebit/flags/ofrep/FetchStatus$Failed : one/rarebit/flags/ofrep/FetchStatus {
+	public synthetic fun <init> (Ljava/lang/Integer;JLjava/lang/Throwable;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/Integer;
+	public final fun component2-UwyO8pc ()J
+	public final fun component3 ()Ljava/lang/Throwable;
+	public final fun copy-8Mi8wO0 (Ljava/lang/Integer;JLjava/lang/Throwable;)Lone/rarebit/flags/ofrep/FetchStatus$Failed;
+	public static synthetic fun copy-8Mi8wO0$default (Lone/rarebit/flags/ofrep/FetchStatus$Failed;Ljava/lang/Integer;JLjava/lang/Throwable;ILjava/lang/Object;)Lone/rarebit/flags/ofrep/FetchStatus$Failed;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCause ()Ljava/lang/Throwable;
+	public final fun getRetryIn-UwyO8pc ()J
+	public final fun getStatus ()Ljava/lang/Integer;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class one/rarebit/flags/ofrep/FetchStatus$Idle : one/rarebit/flags/ofrep/FetchStatus {
+	public static final field INSTANCE Lone/rarebit/flags/ofrep/FetchStatus$Idle;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class one/rarebit/flags/ofrep/FetchStatus$NotModified : one/rarebit/flags/ofrep/FetchStatus {
+	public static final field INSTANCE Lone/rarebit/flags/ofrep/FetchStatus$NotModified;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class one/rarebit/flags/ofrep/FetchStatus$Rejected : one/rarebit/flags/ofrep/FetchStatus {
+	public fun <init> (Lone/rarebit/flags/core/RejectReason;)V
+	public final fun component1 ()Lone/rarebit/flags/core/RejectReason;
+	public final fun copy (Lone/rarebit/flags/core/RejectReason;)Lone/rarebit/flags/ofrep/FetchStatus$Rejected;
+	public static synthetic fun copy$default (Lone/rarebit/flags/ofrep/FetchStatus$Rejected;Lone/rarebit/flags/core/RejectReason;ILjava/lang/Object;)Lone/rarebit/flags/ofrep/FetchStatus$Rejected;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getReason ()Lone/rarebit/flags/core/RejectReason;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class one/rarebit/flags/ofrep/FetchStatus$Stopped : one/rarebit/flags/ofrep/FetchStatus {
+	public fun <init> (I)V
+	public final fun component1 ()I
+	public final fun copy (I)Lone/rarebit/flags/ofrep/FetchStatus$Stopped;
+	public static synthetic fun copy$default (Lone/rarebit/flags/ofrep/FetchStatus$Stopped;IILjava/lang/Object;)Lone/rarebit/flags/ofrep/FetchStatus$Stopped;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getStatus ()I
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class one/rarebit/flags/ofrep/FetchStatus$Updated : one/rarebit/flags/ofrep/FetchStatus {
+	public fun <init> (ZLjava/util/Set;Z)V
+	public final fun component1 ()Z
+	public final fun component2 ()Ljava/util/Set;
+	public final fun component3 ()Z
+	public final fun copy (ZLjava/util/Set;Z)Lone/rarebit/flags/ofrep/FetchStatus$Updated;
+	public static synthetic fun copy$default (Lone/rarebit/flags/ofrep/FetchStatus$Updated;ZLjava/util/Set;ZILjava/lang/Object;)Lone/rarebit/flags/ofrep/FetchStatus$Updated;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAppliedLive ()Ljava/util/Set;
+	public final fun getAppliedNow ()Z
+	public final fun getSaved ()Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class one/rarebit/flags/ofrep/FlagsFetcher {
+	public abstract fun fetch (Ljava/lang/String;ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun getClient ()Lone/rarebit/flags/ofrep/ClientInfo;
+}
+
+public final class one/rarebit/flags/ofrep/FlagsFetcher$DefaultImpls {
+	public static fun getClient (Lone/rarebit/flags/ofrep/FlagsFetcher;)Lone/rarebit/flags/ofrep/ClientInfo;
+}
+
+public final class one/rarebit/flags/ofrep/OfrepClient : one/rarebit/flags/ofrep/FlagsFetcher {
+	public fun <init> (Lio/ktor/client/HttpClient;Ljava/lang/String;Lone/rarebit/flags/ofrep/ClientInfo;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;)V
+	public synthetic fun <init> (Lio/ktor/client/HttpClient;Ljava/lang/String;Lone/rarebit/flags/ofrep/ClientInfo;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun fetch (Ljava/lang/String;ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun getClient ()Lone/rarebit/flags/ofrep/ClientInfo;
+}
+
+public abstract interface class one/rarebit/flags/ofrep/RefreshOutcome {
+}
+
+public final class one/rarebit/flags/ofrep/RefreshOutcome$Completed : one/rarebit/flags/ofrep/RefreshOutcome {
+	public fun <init> (Lone/rarebit/flags/ofrep/FetchStatus;)V
+	public final fun component1 ()Lone/rarebit/flags/ofrep/FetchStatus;
+	public final fun copy (Lone/rarebit/flags/ofrep/FetchStatus;)Lone/rarebit/flags/ofrep/RefreshOutcome$Completed;
+	public static synthetic fun copy$default (Lone/rarebit/flags/ofrep/RefreshOutcome$Completed;Lone/rarebit/flags/ofrep/FetchStatus;ILjava/lang/Object;)Lone/rarebit/flags/ofrep/RefreshOutcome$Completed;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getStatus ()Lone/rarebit/flags/ofrep/FetchStatus;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class one/rarebit/flags/ofrep/RefreshOutcome$Discarded : one/rarebit/flags/ofrep/RefreshOutcome {
+	public static final field INSTANCE Lone/rarebit/flags/ofrep/RefreshOutcome$Discarded;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class one/rarebit/flags/ofrep/RefreshOutcome$SkippedBackoff : one/rarebit/flags/ofrep/RefreshOutcome {
+	public static final field INSTANCE Lone/rarebit/flags/ofrep/RefreshOutcome$SkippedBackoff;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class one/rarebit/flags/ofrep/RefreshOutcome$SkippedStopped : one/rarebit/flags/ofrep/RefreshOutcome {
+	public static final field INSTANCE Lone/rarebit/flags/ofrep/RefreshOutcome$SkippedStopped;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class one/rarebit/flags/ofrep/StandardFlagsClient {
+	public static final field Companion Lone/rarebit/flags/ofrep/StandardFlagsClient$Companion;
+	public fun <init> (Lone/rarebit/flags/ofrep/FlagsFetcher;Ljava/util/Collection;Lone/rarebit/flags/core/LastGoodStore;Lone/rarebit/flags/ofrep/ApplyPolicy;Lone/rarebit/flags/ofrep/Backoff;Lone/rarebit/flags/core/PayloadLimits;Lkotlin/time/TimeSource;Ljava/lang/String;)V
+	public synthetic fun <init> (Lone/rarebit/flags/ofrep/FlagsFetcher;Ljava/util/Collection;Lone/rarebit/flags/core/LastGoodStore;Lone/rarebit/flags/ofrep/ApplyPolicy;Lone/rarebit/flags/ofrep/Backoff;Lone/rarebit/flags/core/PayloadLimits;Lkotlin/time/TimeSource;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun definition (Ljava/lang/String;)Lone/rarebit/flags/core/FlagDefinition;
+	public final fun getPayload ()Lkotlinx/coroutines/flow/StateFlow;
+	public final fun getPending ()Lkotlinx/coroutines/flow/StateFlow;
+	public final fun getStatus ()Lkotlinx/coroutines/flow/StateFlow;
+	public final fun getStoreError ()Lkotlinx/coroutines/flow/StateFlow;
+	public final fun load (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun read (Lone/rarebit/flags/core/FlagDefinition;)Lone/rarebit/flags/core/FlagRead;
+	public final fun refresh (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun seed (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun setContext (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun state (Lone/rarebit/flags/core/BooleanFlag;)Lone/rarebit/flags/core/FlagState;
+	public final fun value (Lone/rarebit/flags/core/FlagDefinition;)Ljava/lang/Object;
+}
+
+public final class one/rarebit/flags/ofrep/StandardFlagsClient$Companion {
+	public final fun normalizeContextKey (Ljava/lang/String;)Ljava/lang/String;
+}
+
+public final class one/rarebit/flags/ofrep/StoreError {
+	public fun <init> (Lone/rarebit/flags/ofrep/StoreOperation;Ljava/lang/Throwable;)V
+	public final fun component1 ()Lone/rarebit/flags/ofrep/StoreOperation;
+	public final fun component2 ()Ljava/lang/Throwable;
+	public final fun copy (Lone/rarebit/flags/ofrep/StoreOperation;Ljava/lang/Throwable;)Lone/rarebit/flags/ofrep/StoreError;
+	public static synthetic fun copy$default (Lone/rarebit/flags/ofrep/StoreError;Lone/rarebit/flags/ofrep/StoreOperation;Ljava/lang/Throwable;ILjava/lang/Object;)Lone/rarebit/flags/ofrep/StoreError;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCause ()Ljava/lang/Throwable;
+	public final fun getOperation ()Lone/rarebit/flags/ofrep/StoreOperation;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class one/rarebit/flags/ofrep/StoreOperation : java/lang/Enum {
+	public static final field Clear Lone/rarebit/flags/ofrep/StoreOperation;
+	public static final field Load Lone/rarebit/flags/ofrep/StoreOperation;
+	public static final field Save Lone/rarebit/flags/ofrep/StoreOperation;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lone/rarebit/flags/ofrep/StoreOperation;
+	public static fun values ()[Lone/rarebit/flags/ofrep/StoreOperation;
+}
+

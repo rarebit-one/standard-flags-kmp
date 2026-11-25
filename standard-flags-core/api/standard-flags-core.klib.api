@@ -1,0 +1,450 @@
+// Klib ABI Dump
+// Targets: [iosArm64, iosSimulatorArm64]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <standard-flags-kmp:standard-flags-core>
+final enum class one.rarebit.flags.core/FallbackCause : kotlin/Enum<one.rarebit.flags.core/FallbackCause> { // one.rarebit.flags.core/FallbackCause|null[0]
+    enum entry Errored // one.rarebit.flags.core/FallbackCause.Errored|null[0]
+    enum entry Missing // one.rarebit.flags.core/FallbackCause.Missing|null[0]
+    enum entry NoPayload // one.rarebit.flags.core/FallbackCause.NoPayload|null[0]
+    enum entry NoValue // one.rarebit.flags.core/FallbackCause.NoValue|null[0]
+    enum entry NotAllowed // one.rarebit.flags.core/FallbackCause.NotAllowed|null[0]
+    enum entry WrongType // one.rarebit.flags.core/FallbackCause.WrongType|null[0]
+
+    final val entries // one.rarebit.flags.core/FallbackCause.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<one.rarebit.flags.core/FallbackCause> // one.rarebit.flags.core/FallbackCause.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): one.rarebit.flags.core/FallbackCause // one.rarebit.flags.core/FallbackCause.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<one.rarebit.flags.core/FallbackCause> // one.rarebit.flags.core/FallbackCause.values|values#static(){}[0]
+}
+
+final enum class one.rarebit.flags.core/FlagState : kotlin/Enum<one.rarebit.flags.core/FlagState> { // one.rarebit.flags.core/FlagState|null[0]
+    enum entry NotLoaded // one.rarebit.flags.core/FlagState.NotLoaded|null[0]
+    enum entry Off // one.rarebit.flags.core/FlagState.Off|null[0]
+    enum entry On // one.rarebit.flags.core/FlagState.On|null[0]
+
+    final val entries // one.rarebit.flags.core/FlagState.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<one.rarebit.flags.core/FlagState> // one.rarebit.flags.core/FlagState.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): one.rarebit.flags.core/FlagState // one.rarebit.flags.core/FlagState.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<one.rarebit.flags.core/FlagState> // one.rarebit.flags.core/FlagState.values|values#static(){}[0]
+}
+
+final enum class one.rarebit.flags.core/RangeOperator : kotlin/Enum<one.rarebit.flags.core/RangeOperator> { // one.rarebit.flags.core/RangeOperator|null[0]
+    enum entry Above // one.rarebit.flags.core/RangeOperator.Above|null[0]
+    enum entry AtLeast // one.rarebit.flags.core/RangeOperator.AtLeast|null[0]
+    enum entry AtMost // one.rarebit.flags.core/RangeOperator.AtMost|null[0]
+    enum entry Below // one.rarebit.flags.core/RangeOperator.Below|null[0]
+    enum entry Exactly // one.rarebit.flags.core/RangeOperator.Exactly|null[0]
+
+    final val entries // one.rarebit.flags.core/RangeOperator.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<one.rarebit.flags.core/RangeOperator> // one.rarebit.flags.core/RangeOperator.entries.<get-entries>|<get-entries>#static(){}[0]
+    final val symbol // one.rarebit.flags.core/RangeOperator.symbol|{}symbol[0]
+        final fun <get-symbol>(): kotlin/String // one.rarebit.flags.core/RangeOperator.symbol.<get-symbol>|<get-symbol>(){}[0]
+
+    final fun valueOf(kotlin/String): one.rarebit.flags.core/RangeOperator // one.rarebit.flags.core/RangeOperator.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<one.rarebit.flags.core/RangeOperator> // one.rarebit.flags.core/RangeOperator.values|values#static(){}[0]
+}
+
+final enum class one.rarebit.flags.core/RejectReason : kotlin/Enum<one.rarebit.flags.core/RejectReason> { // one.rarebit.flags.core/RejectReason|null[0]
+    enum entry BadEntry // one.rarebit.flags.core/RejectReason.BadEntry|null[0]
+    enum entry DuplicateKey // one.rarebit.flags.core/RejectReason.DuplicateKey|null[0]
+    enum entry FlagsNotAnArray // one.rarebit.flags.core/RejectReason.FlagsNotAnArray|null[0]
+    enum entry MetadataNotAnObject // one.rarebit.flags.core/RejectReason.MetadataNotAnObject|null[0]
+    enum entry NotAnObject // one.rarebit.flags.core/RejectReason.NotAnObject|null[0]
+    enum entry NotJson // one.rarebit.flags.core/RejectReason.NotJson|null[0]
+    enum entry TooLarge // one.rarebit.flags.core/RejectReason.TooLarge|null[0]
+    enum entry TooManyFlags // one.rarebit.flags.core/RejectReason.TooManyFlags|null[0]
+
+    final val entries // one.rarebit.flags.core/RejectReason.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<one.rarebit.flags.core/RejectReason> // one.rarebit.flags.core/RejectReason.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): one.rarebit.flags.core/RejectReason // one.rarebit.flags.core/RejectReason.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<one.rarebit.flags.core/RejectReason> // one.rarebit.flags.core/RejectReason.values|values#static(){}[0]
+}
+
+abstract interface one.rarebit.flags.core/LastGoodStore { // one.rarebit.flags.core/LastGoodStore|null[0]
+    abstract suspend fun clear() // one.rarebit.flags.core/LastGoodStore.clear|clear(){}[0]
+    abstract suspend fun load(): one.rarebit.flags.core/StoredPayload? // one.rarebit.flags.core/LastGoodStore.load|load(){}[0]
+    abstract suspend fun save(one.rarebit.flags.core/StoredPayload) // one.rarebit.flags.core/LastGoodStore.save|save(one.rarebit.flags.core.StoredPayload){}[0]
+}
+
+sealed interface one.rarebit.flags.core/FlagValue { // one.rarebit.flags.core/FlagValue|null[0]
+    final class Bool : one.rarebit.flags.core/FlagValue { // one.rarebit.flags.core/FlagValue.Bool|null[0]
+        constructor <init>(kotlin/Boolean) // one.rarebit.flags.core/FlagValue.Bool.<init>|<init>(kotlin.Boolean){}[0]
+
+        final val value // one.rarebit.flags.core/FlagValue.Bool.value|{}value[0]
+            final fun <get-value>(): kotlin/Boolean // one.rarebit.flags.core/FlagValue.Bool.value.<get-value>|<get-value>(){}[0]
+
+        final fun component1(): kotlin/Boolean // one.rarebit.flags.core/FlagValue.Bool.component1|component1(){}[0]
+        final fun copy(kotlin/Boolean = ...): one.rarebit.flags.core/FlagValue.Bool // one.rarebit.flags.core/FlagValue.Bool.copy|copy(kotlin.Boolean){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // one.rarebit.flags.core/FlagValue.Bool.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // one.rarebit.flags.core/FlagValue.Bool.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // one.rarebit.flags.core/FlagValue.Bool.toString|toString(){}[0]
+    }
+
+    final class Other : one.rarebit.flags.core/FlagValue { // one.rarebit.flags.core/FlagValue.Other|null[0]
+        constructor <init>(kotlinx.serialization.json/JsonElement) // one.rarebit.flags.core/FlagValue.Other.<init>|<init>(kotlinx.serialization.json.JsonElement){}[0]
+
+        final val json // one.rarebit.flags.core/FlagValue.Other.json|{}json[0]
+            final fun <get-json>(): kotlinx.serialization.json/JsonElement // one.rarebit.flags.core/FlagValue.Other.json.<get-json>|<get-json>(){}[0]
+
+        final fun component1(): kotlinx.serialization.json/JsonElement // one.rarebit.flags.core/FlagValue.Other.component1|component1(){}[0]
+        final fun copy(kotlinx.serialization.json/JsonElement = ...): one.rarebit.flags.core/FlagValue.Other // one.rarebit.flags.core/FlagValue.Other.copy|copy(kotlinx.serialization.json.JsonElement){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // one.rarebit.flags.core/FlagValue.Other.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // one.rarebit.flags.core/FlagValue.Other.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // one.rarebit.flags.core/FlagValue.Other.toString|toString(){}[0]
+    }
+
+    final class Text : one.rarebit.flags.core/FlagValue { // one.rarebit.flags.core/FlagValue.Text|null[0]
+        constructor <init>(kotlin/String) // one.rarebit.flags.core/FlagValue.Text.<init>|<init>(kotlin.String){}[0]
+
+        final val value // one.rarebit.flags.core/FlagValue.Text.value|{}value[0]
+            final fun <get-value>(): kotlin/String // one.rarebit.flags.core/FlagValue.Text.value.<get-value>|<get-value>(){}[0]
+
+        final fun component1(): kotlin/String // one.rarebit.flags.core/FlagValue.Text.component1|component1(){}[0]
+        final fun copy(kotlin/String = ...): one.rarebit.flags.core/FlagValue.Text // one.rarebit.flags.core/FlagValue.Text.copy|copy(kotlin.String){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // one.rarebit.flags.core/FlagValue.Text.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // one.rarebit.flags.core/FlagValue.Text.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // one.rarebit.flags.core/FlagValue.Text.toString|toString(){}[0]
+    }
+
+    final object Companion // one.rarebit.flags.core/FlagValue.Companion|null[0]
+}
+
+sealed interface one.rarebit.flags.core/PayloadResult { // one.rarebit.flags.core/PayloadResult|null[0]
+    final class Accepted : one.rarebit.flags.core/PayloadResult { // one.rarebit.flags.core/PayloadResult.Accepted|null[0]
+        constructor <init>(one.rarebit.flags.core/FlagPayload) // one.rarebit.flags.core/PayloadResult.Accepted.<init>|<init>(one.rarebit.flags.core.FlagPayload){}[0]
+
+        final val payload // one.rarebit.flags.core/PayloadResult.Accepted.payload|{}payload[0]
+            final fun <get-payload>(): one.rarebit.flags.core/FlagPayload // one.rarebit.flags.core/PayloadResult.Accepted.payload.<get-payload>|<get-payload>(){}[0]
+
+        final fun component1(): one.rarebit.flags.core/FlagPayload // one.rarebit.flags.core/PayloadResult.Accepted.component1|component1(){}[0]
+        final fun copy(one.rarebit.flags.core/FlagPayload = ...): one.rarebit.flags.core/PayloadResult.Accepted // one.rarebit.flags.core/PayloadResult.Accepted.copy|copy(one.rarebit.flags.core.FlagPayload){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // one.rarebit.flags.core/PayloadResult.Accepted.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // one.rarebit.flags.core/PayloadResult.Accepted.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // one.rarebit.flags.core/PayloadResult.Accepted.toString|toString(){}[0]
+    }
+
+    final class Rejected : one.rarebit.flags.core/PayloadResult { // one.rarebit.flags.core/PayloadResult.Rejected|null[0]
+        constructor <init>(one.rarebit.flags.core/RejectReason) // one.rarebit.flags.core/PayloadResult.Rejected.<init>|<init>(one.rarebit.flags.core.RejectReason){}[0]
+
+        final val reason // one.rarebit.flags.core/PayloadResult.Rejected.reason|{}reason[0]
+            final fun <get-reason>(): one.rarebit.flags.core/RejectReason // one.rarebit.flags.core/PayloadResult.Rejected.reason.<get-reason>|<get-reason>(){}[0]
+
+        final fun component1(): one.rarebit.flags.core/RejectReason // one.rarebit.flags.core/PayloadResult.Rejected.component1|component1(){}[0]
+        final fun copy(one.rarebit.flags.core/RejectReason = ...): one.rarebit.flags.core/PayloadResult.Rejected // one.rarebit.flags.core/PayloadResult.Rejected.copy|copy(one.rarebit.flags.core.RejectReason){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // one.rarebit.flags.core/PayloadResult.Rejected.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // one.rarebit.flags.core/PayloadResult.Rejected.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // one.rarebit.flags.core/PayloadResult.Rejected.toString|toString(){}[0]
+    }
+}
+
+final class <#A: kotlin/Comparable<#A>> one.rarebit.flags.core/RangeComparator { // one.rarebit.flags.core/RangeComparator|null[0]
+    constructor <init>(one.rarebit.flags.core/RangeOperator, #A) // one.rarebit.flags.core/RangeComparator.<init>|<init>(one.rarebit.flags.core.RangeOperator;1:0){}[0]
+
+    final val operand // one.rarebit.flags.core/RangeComparator.operand|{}operand[0]
+        final fun <get-operand>(): #A // one.rarebit.flags.core/RangeComparator.operand.<get-operand>|<get-operand>(){}[0]
+    final val operator // one.rarebit.flags.core/RangeComparator.operator|{}operator[0]
+        final fun <get-operator>(): one.rarebit.flags.core/RangeOperator // one.rarebit.flags.core/RangeComparator.operator.<get-operator>|<get-operator>(){}[0]
+
+    final fun component1(): one.rarebit.flags.core/RangeOperator // one.rarebit.flags.core/RangeComparator.component1|component1(){}[0]
+    final fun component2(): #A // one.rarebit.flags.core/RangeComparator.component2|component2(){}[0]
+    final fun copy(one.rarebit.flags.core/RangeOperator = ..., #A = ...): one.rarebit.flags.core/RangeComparator<#A> // one.rarebit.flags.core/RangeComparator.copy|copy(one.rarebit.flags.core.RangeOperator;1:0){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // one.rarebit.flags.core/RangeComparator.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // one.rarebit.flags.core/RangeComparator.hashCode|hashCode(){}[0]
+    final fun satisfiedBy(#A): kotlin/Boolean // one.rarebit.flags.core/RangeComparator.satisfiedBy|satisfiedBy(1:0){}[0]
+    final fun toString(): kotlin/String // one.rarebit.flags.core/RangeComparator.toString|toString(){}[0]
+}
+
+final class <#A: out kotlin/Any> one.rarebit.flags.core/FlagRead { // one.rarebit.flags.core/FlagRead|null[0]
+    constructor <init>(#A, kotlin/Boolean, kotlin/String?, kotlin/String?, one.rarebit.flags.core/FallbackCause?, one.rarebit.flags.core/FlagEntry?) // one.rarebit.flags.core/FlagRead.<init>|<init>(1:0;kotlin.Boolean;kotlin.String?;kotlin.String?;one.rarebit.flags.core.FallbackCause?;one.rarebit.flags.core.FlagEntry?){}[0]
+
+    final val cause // one.rarebit.flags.core/FlagRead.cause|{}cause[0]
+        final fun <get-cause>(): one.rarebit.flags.core/FallbackCause? // one.rarebit.flags.core/FlagRead.cause.<get-cause>|<get-cause>(){}[0]
+    final val entry // one.rarebit.flags.core/FlagRead.entry|{}entry[0]
+        final fun <get-entry>(): one.rarebit.flags.core/FlagEntry? // one.rarebit.flags.core/FlagRead.entry.<get-entry>|<get-entry>(){}[0]
+    final val loaded // one.rarebit.flags.core/FlagRead.loaded|{}loaded[0]
+        final fun <get-loaded>(): kotlin/Boolean // one.rarebit.flags.core/FlagRead.loaded.<get-loaded>|<get-loaded>(){}[0]
+    final val reason // one.rarebit.flags.core/FlagRead.reason|{}reason[0]
+        final fun <get-reason>(): kotlin/String? // one.rarebit.flags.core/FlagRead.reason.<get-reason>|<get-reason>(){}[0]
+    final val value // one.rarebit.flags.core/FlagRead.value|{}value[0]
+        final fun <get-value>(): #A // one.rarebit.flags.core/FlagRead.value.<get-value>|<get-value>(){}[0]
+    final val variant // one.rarebit.flags.core/FlagRead.variant|{}variant[0]
+        final fun <get-variant>(): kotlin/String? // one.rarebit.flags.core/FlagRead.variant.<get-variant>|<get-variant>(){}[0]
+
+    final fun component1(): #A // one.rarebit.flags.core/FlagRead.component1|component1(){}[0]
+    final fun component2(): kotlin/Boolean // one.rarebit.flags.core/FlagRead.component2|component2(){}[0]
+    final fun component3(): kotlin/String? // one.rarebit.flags.core/FlagRead.component3|component3(){}[0]
+    final fun component4(): kotlin/String? // one.rarebit.flags.core/FlagRead.component4|component4(){}[0]
+    final fun component5(): one.rarebit.flags.core/FallbackCause? // one.rarebit.flags.core/FlagRead.component5|component5(){}[0]
+    final fun component6(): one.rarebit.flags.core/FlagEntry? // one.rarebit.flags.core/FlagRead.component6|component6(){}[0]
+    final fun copy(#A = ..., kotlin/Boolean = ..., kotlin/String? = ..., kotlin/String? = ..., one.rarebit.flags.core/FallbackCause? = ..., one.rarebit.flags.core/FlagEntry? = ...): one.rarebit.flags.core/FlagRead<#A> // one.rarebit.flags.core/FlagRead.copy|copy(1:0;kotlin.Boolean;kotlin.String?;kotlin.String?;one.rarebit.flags.core.FallbackCause?;one.rarebit.flags.core.FlagEntry?){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // one.rarebit.flags.core/FlagRead.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // one.rarebit.flags.core/FlagRead.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // one.rarebit.flags.core/FlagRead.toString|toString(){}[0]
+}
+
+final class one.rarebit.flags.core/BooleanFlag : one.rarebit.flags.core/FlagDefinition<kotlin/Boolean> { // one.rarebit.flags.core/BooleanFlag|null[0]
+    constructor <init>(kotlin/String, kotlin/Boolean, kotlin/Boolean = ..., kotlin/Boolean = ...) // one.rarebit.flags.core/BooleanFlag.<init>|<init>(kotlin.String;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean){}[0]
+
+    final val ceiling // one.rarebit.flags.core/BooleanFlag.ceiling|{}ceiling[0]
+        final fun <get-ceiling>(): kotlin/Boolean // one.rarebit.flags.core/BooleanFlag.ceiling.<get-ceiling>|<get-ceiling>(){}[0]
+    final val default // one.rarebit.flags.core/BooleanFlag.default|{}default[0]
+        final fun <get-default>(): kotlin/Boolean // one.rarebit.flags.core/BooleanFlag.default.<get-default>|<get-default>(){}[0]
+    final val killSwitch // one.rarebit.flags.core/BooleanFlag.killSwitch|{}killSwitch[0]
+        final fun <get-killSwitch>(): kotlin/Boolean // one.rarebit.flags.core/BooleanFlag.killSwitch.<get-killSwitch>|<get-killSwitch>(){}[0]
+    final val wire // one.rarebit.flags.core/BooleanFlag.wire|{}wire[0]
+        final fun <get-wire>(): kotlin/String // one.rarebit.flags.core/BooleanFlag.wire.<get-wire>|<get-wire>(){}[0]
+
+    final fun component1(): kotlin/String // one.rarebit.flags.core/BooleanFlag.component1|component1(){}[0]
+    final fun component2(): kotlin/Boolean // one.rarebit.flags.core/BooleanFlag.component2|component2(){}[0]
+    final fun component3(): kotlin/Boolean // one.rarebit.flags.core/BooleanFlag.component3|component3(){}[0]
+    final fun component4(): kotlin/Boolean // one.rarebit.flags.core/BooleanFlag.component4|component4(){}[0]
+    final fun copy(kotlin/String = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ...): one.rarebit.flags.core/BooleanFlag // one.rarebit.flags.core/BooleanFlag.copy|copy(kotlin.String;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // one.rarebit.flags.core/BooleanFlag.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // one.rarebit.flags.core/BooleanFlag.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // one.rarebit.flags.core/BooleanFlag.toString|toString(){}[0]
+}
+
+final class one.rarebit.flags.core/BuildRange { // one.rarebit.flags.core/BuildRange|null[0]
+    final val alternatives // one.rarebit.flags.core/BuildRange.alternatives|{}alternatives[0]
+        final fun <get-alternatives>(): kotlin.collections/List<kotlin.collections/List<one.rarebit.flags.core/RangeComparator<kotlin/Long>>> // one.rarebit.flags.core/BuildRange.alternatives.<get-alternatives>|<get-alternatives>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // one.rarebit.flags.core/BuildRange.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // one.rarebit.flags.core/BuildRange.hashCode|hashCode(){}[0]
+    final fun matches(kotlin/Long?): kotlin/Boolean // one.rarebit.flags.core/BuildRange.matches|matches(kotlin.Long?){}[0]
+    final fun matches(kotlin/String?): kotlin/Boolean // one.rarebit.flags.core/BuildRange.matches|matches(kotlin.String?){}[0]
+    final fun toString(): kotlin/String // one.rarebit.flags.core/BuildRange.toString|toString(){}[0]
+
+    final object Companion { // one.rarebit.flags.core/BuildRange.Companion|null[0]
+        final fun number(kotlin/String?): kotlin/Long? // one.rarebit.flags.core/BuildRange.Companion.number|number(kotlin.String?){}[0]
+        final fun parse(kotlin/String?): one.rarebit.flags.core/BuildRange? // one.rarebit.flags.core/BuildRange.Companion.parse|parse(kotlin.String?){}[0]
+    }
+}
+
+final class one.rarebit.flags.core/FlagCache { // one.rarebit.flags.core/FlagCache|null[0]
+    constructor <init>(one.rarebit.flags.core/PayloadLimits = ...) // one.rarebit.flags.core/FlagCache.<init>|<init>(one.rarebit.flags.core.PayloadLimits){}[0]
+
+    final val limits // one.rarebit.flags.core/FlagCache.limits|{}limits[0]
+        final fun <get-limits>(): one.rarebit.flags.core/PayloadLimits // one.rarebit.flags.core/FlagCache.limits.<get-limits>|<get-limits>(){}[0]
+    final val version // one.rarebit.flags.core/FlagCache.version|{}version[0]
+        final fun <get-version>(): kotlin/String? // one.rarebit.flags.core/FlagCache.version.<get-version>|<get-version>(){}[0]
+
+    final var payload // one.rarebit.flags.core/FlagCache.payload|{}payload[0]
+        final fun <get-payload>(): one.rarebit.flags.core/FlagPayload? // one.rarebit.flags.core/FlagCache.payload.<get-payload>|<get-payload>(){}[0]
+
+    final fun <#A1: kotlin/Any> read(one.rarebit.flags.core/FlagDefinition<#A1>): one.rarebit.flags.core/FlagRead<#A1> // one.rarebit.flags.core/FlagCache.read|read(one.rarebit.flags.core.FlagDefinition<0:0>){0§<kotlin.Any>}[0]
+    final fun accept(one.rarebit.flags.core/FlagPayload) // one.rarebit.flags.core/FlagCache.accept|accept(one.rarebit.flags.core.FlagPayload){}[0]
+    final fun notModified() // one.rarebit.flags.core/FlagCache.notModified|notModified(){}[0]
+    final fun receive(kotlin/ByteArray): one.rarebit.flags.core/PayloadResult // one.rarebit.flags.core/FlagCache.receive|receive(kotlin.ByteArray){}[0]
+}
+
+final class one.rarebit.flags.core/FlagEntry { // one.rarebit.flags.core/FlagEntry|null[0]
+    constructor <init>(kotlin/String, one.rarebit.flags.core/FlagValue?, kotlin/String?, kotlin/String?, kotlin/Boolean, kotlin/String?, kotlin/String?) // one.rarebit.flags.core/FlagEntry.<init>|<init>(kotlin.String;one.rarebit.flags.core.FlagValue?;kotlin.String?;kotlin.String?;kotlin.Boolean;kotlin.String?;kotlin.String?){}[0]
+
+    final val errorCode // one.rarebit.flags.core/FlagEntry.errorCode|{}errorCode[0]
+        final fun <get-errorCode>(): kotlin/String? // one.rarebit.flags.core/FlagEntry.errorCode.<get-errorCode>|<get-errorCode>(){}[0]
+    final val errorDetails // one.rarebit.flags.core/FlagEntry.errorDetails|{}errorDetails[0]
+        final fun <get-errorDetails>(): kotlin/String? // one.rarebit.flags.core/FlagEntry.errorDetails.<get-errorDetails>|<get-errorDetails>(){}[0]
+    final val failed // one.rarebit.flags.core/FlagEntry.failed|{}failed[0]
+        final fun <get-failed>(): kotlin/Boolean // one.rarebit.flags.core/FlagEntry.failed.<get-failed>|<get-failed>(){}[0]
+    final val isKillSwitch // one.rarebit.flags.core/FlagEntry.isKillSwitch|{}isKillSwitch[0]
+        final fun <get-isKillSwitch>(): kotlin/Boolean // one.rarebit.flags.core/FlagEntry.isKillSwitch.<get-isKillSwitch>|<get-isKillSwitch>(){}[0]
+    final val key // one.rarebit.flags.core/FlagEntry.key|{}key[0]
+        final fun <get-key>(): kotlin/String // one.rarebit.flags.core/FlagEntry.key.<get-key>|<get-key>(){}[0]
+    final val reason // one.rarebit.flags.core/FlagEntry.reason|{}reason[0]
+        final fun <get-reason>(): kotlin/String? // one.rarebit.flags.core/FlagEntry.reason.<get-reason>|<get-reason>(){}[0]
+    final val value // one.rarebit.flags.core/FlagEntry.value|{}value[0]
+        final fun <get-value>(): one.rarebit.flags.core/FlagValue? // one.rarebit.flags.core/FlagEntry.value.<get-value>|<get-value>(){}[0]
+    final val variant // one.rarebit.flags.core/FlagEntry.variant|{}variant[0]
+        final fun <get-variant>(): kotlin/String? // one.rarebit.flags.core/FlagEntry.variant.<get-variant>|<get-variant>(){}[0]
+
+    final fun component1(): kotlin/String // one.rarebit.flags.core/FlagEntry.component1|component1(){}[0]
+    final fun component2(): one.rarebit.flags.core/FlagValue? // one.rarebit.flags.core/FlagEntry.component2|component2(){}[0]
+    final fun component3(): kotlin/String? // one.rarebit.flags.core/FlagEntry.component3|component3(){}[0]
+    final fun component4(): kotlin/String? // one.rarebit.flags.core/FlagEntry.component4|component4(){}[0]
+    final fun component5(): kotlin/Boolean // one.rarebit.flags.core/FlagEntry.component5|component5(){}[0]
+    final fun component6(): kotlin/String? // one.rarebit.flags.core/FlagEntry.component6|component6(){}[0]
+    final fun component7(): kotlin/String? // one.rarebit.flags.core/FlagEntry.component7|component7(){}[0]
+    final fun copy(kotlin/String = ..., one.rarebit.flags.core/FlagValue? = ..., kotlin/String? = ..., kotlin/String? = ..., kotlin/Boolean = ..., kotlin/String? = ..., kotlin/String? = ...): one.rarebit.flags.core/FlagEntry // one.rarebit.flags.core/FlagEntry.copy|copy(kotlin.String;one.rarebit.flags.core.FlagValue?;kotlin.String?;kotlin.String?;kotlin.Boolean;kotlin.String?;kotlin.String?){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // one.rarebit.flags.core/FlagEntry.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // one.rarebit.flags.core/FlagEntry.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // one.rarebit.flags.core/FlagEntry.toString|toString(){}[0]
+
+    final object Companion { // one.rarebit.flags.core/FlagEntry.Companion|null[0]
+        final const val REASON_KILL_SWITCH // one.rarebit.flags.core/FlagEntry.Companion.REASON_KILL_SWITCH|{}REASON_KILL_SWITCH[0]
+            final fun <get-REASON_KILL_SWITCH>(): kotlin/String // one.rarebit.flags.core/FlagEntry.Companion.REASON_KILL_SWITCH.<get-REASON_KILL_SWITCH>|<get-REASON_KILL_SWITCH>(){}[0]
+    }
+}
+
+final class one.rarebit.flags.core/FlagPayload { // one.rarebit.flags.core/FlagPayload|null[0]
+    final val body // one.rarebit.flags.core/FlagPayload.body|{}body[0]
+        final fun <get-body>(): kotlin/String // one.rarebit.flags.core/FlagPayload.body.<get-body>|<get-body>(){}[0]
+    final val entries // one.rarebit.flags.core/FlagPayload.entries|{}entries[0]
+        final fun <get-entries>(): kotlin.collections/Map<kotlin/String, one.rarebit.flags.core/FlagEntry> // one.rarebit.flags.core/FlagPayload.entries.<get-entries>|<get-entries>(){}[0]
+    final val etag // one.rarebit.flags.core/FlagPayload.etag|{}etag[0]
+        final fun <get-etag>(): kotlin/String? // one.rarebit.flags.core/FlagPayload.etag.<get-etag>|<get-etag>(){}[0]
+    final val version // one.rarebit.flags.core/FlagPayload.version|{}version[0]
+        final fun <get-version>(): kotlin/String? // one.rarebit.flags.core/FlagPayload.version.<get-version>|<get-version>(){}[0]
+
+    final object Companion { // one.rarebit.flags.core/FlagPayload.Companion|null[0]
+        final fun isUsableVersion(kotlin/String): kotlin/Boolean // one.rarebit.flags.core/FlagPayload.Companion.isUsableVersion|isUsableVersion(kotlin.String){}[0]
+        final fun overlay(one.rarebit.flags.core/FlagPayload?, one.rarebit.flags.core/FlagPayload, kotlin.collections/Set<kotlin/String>): one.rarebit.flags.core/FlagPayload // one.rarebit.flags.core/FlagPayload.Companion.overlay|overlay(one.rarebit.flags.core.FlagPayload?;one.rarebit.flags.core.FlagPayload;kotlin.collections.Set<kotlin.String>){}[0]
+        final fun parse(kotlin/ByteArray, one.rarebit.flags.core/PayloadLimits = ...): one.rarebit.flags.core/PayloadResult // one.rarebit.flags.core/FlagPayload.Companion.parse|parse(kotlin.ByteArray;one.rarebit.flags.core.PayloadLimits){}[0]
+        final fun parse(kotlin/String, one.rarebit.flags.core/PayloadLimits = ...): one.rarebit.flags.core/PayloadResult // one.rarebit.flags.core/FlagPayload.Companion.parse|parse(kotlin.String;one.rarebit.flags.core.PayloadLimits){}[0]
+    }
+}
+
+final class one.rarebit.flags.core/InMemoryLastGoodStore : one.rarebit.flags.core/LastGoodStore { // one.rarebit.flags.core/InMemoryLastGoodStore|null[0]
+    constructor <init>(one.rarebit.flags.core/StoredPayload? = ...) // one.rarebit.flags.core/InMemoryLastGoodStore.<init>|<init>(one.rarebit.flags.core.StoredPayload?){}[0]
+
+    final suspend fun clear() // one.rarebit.flags.core/InMemoryLastGoodStore.clear|clear(){}[0]
+    final suspend fun load(): one.rarebit.flags.core/StoredPayload? // one.rarebit.flags.core/InMemoryLastGoodStore.load|load(){}[0]
+    final suspend fun save(one.rarebit.flags.core/StoredPayload) // one.rarebit.flags.core/InMemoryLastGoodStore.save|save(one.rarebit.flags.core.StoredPayload){}[0]
+}
+
+final class one.rarebit.flags.core/PayloadLimits { // one.rarebit.flags.core/PayloadLimits|null[0]
+    constructor <init>(kotlin/Int = ..., kotlin/Int = ...) // one.rarebit.flags.core/PayloadLimits.<init>|<init>(kotlin.Int;kotlin.Int){}[0]
+
+    final val maxBytes // one.rarebit.flags.core/PayloadLimits.maxBytes|{}maxBytes[0]
+        final fun <get-maxBytes>(): kotlin/Int // one.rarebit.flags.core/PayloadLimits.maxBytes.<get-maxBytes>|<get-maxBytes>(){}[0]
+    final val maxFlags // one.rarebit.flags.core/PayloadLimits.maxFlags|{}maxFlags[0]
+        final fun <get-maxFlags>(): kotlin/Int // one.rarebit.flags.core/PayloadLimits.maxFlags.<get-maxFlags>|<get-maxFlags>(){}[0]
+
+    final fun component1(): kotlin/Int // one.rarebit.flags.core/PayloadLimits.component1|component1(){}[0]
+    final fun component2(): kotlin/Int // one.rarebit.flags.core/PayloadLimits.component2|component2(){}[0]
+    final fun copy(kotlin/Int = ..., kotlin/Int = ...): one.rarebit.flags.core/PayloadLimits // one.rarebit.flags.core/PayloadLimits.copy|copy(kotlin.Int;kotlin.Int){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // one.rarebit.flags.core/PayloadLimits.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // one.rarebit.flags.core/PayloadLimits.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // one.rarebit.flags.core/PayloadLimits.toString|toString(){}[0]
+}
+
+final class one.rarebit.flags.core/StoredPayload { // one.rarebit.flags.core/StoredPayload|null[0]
+    constructor <init>(kotlin/String, kotlin/String? = ..., kotlin/String? = ..., kotlin/Int = ...) // one.rarebit.flags.core/StoredPayload.<init>|<init>(kotlin.String;kotlin.String?;kotlin.String?;kotlin.Int){}[0]
+
+    final val body // one.rarebit.flags.core/StoredPayload.body|{}body[0]
+        final fun <get-body>(): kotlin/String // one.rarebit.flags.core/StoredPayload.body.<get-body>|<get-body>(){}[0]
+    final val client // one.rarebit.flags.core/StoredPayload.client|{}client[0]
+        final fun <get-client>(): kotlin/String? // one.rarebit.flags.core/StoredPayload.client.<get-client>|<get-client>(){}[0]
+    final val contextKey // one.rarebit.flags.core/StoredPayload.contextKey|{}contextKey[0]
+        final fun <get-contextKey>(): kotlin/String? // one.rarebit.flags.core/StoredPayload.contextKey.<get-contextKey>|<get-contextKey>(){}[0]
+    final val format // one.rarebit.flags.core/StoredPayload.format|{}format[0]
+        final fun <get-format>(): kotlin/Int // one.rarebit.flags.core/StoredPayload.format.<get-format>|<get-format>(){}[0]
+
+    final fun component1(): kotlin/String // one.rarebit.flags.core/StoredPayload.component1|component1(){}[0]
+    final fun component2(): kotlin/String? // one.rarebit.flags.core/StoredPayload.component2|component2(){}[0]
+    final fun component3(): kotlin/String? // one.rarebit.flags.core/StoredPayload.component3|component3(){}[0]
+    final fun component4(): kotlin/Int // one.rarebit.flags.core/StoredPayload.component4|component4(){}[0]
+    final fun copy(kotlin/String = ..., kotlin/String? = ..., kotlin/String? = ..., kotlin/Int = ...): one.rarebit.flags.core/StoredPayload // one.rarebit.flags.core/StoredPayload.copy|copy(kotlin.String;kotlin.String?;kotlin.String?;kotlin.Int){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // one.rarebit.flags.core/StoredPayload.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // one.rarebit.flags.core/StoredPayload.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // one.rarebit.flags.core/StoredPayload.toString|toString(){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<one.rarebit.flags.core/StoredPayload> { // one.rarebit.flags.core/StoredPayload.$serializer|null[0]
+        final val descriptor // one.rarebit.flags.core/StoredPayload.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // one.rarebit.flags.core/StoredPayload.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // one.rarebit.flags.core/StoredPayload.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): one.rarebit.flags.core/StoredPayload // one.rarebit.flags.core/StoredPayload.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, one.rarebit.flags.core/StoredPayload) // one.rarebit.flags.core/StoredPayload.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;one.rarebit.flags.core.StoredPayload){}[0]
+    }
+
+    final object Companion { // one.rarebit.flags.core/StoredPayload.Companion|null[0]
+        final const val FORMAT // one.rarebit.flags.core/StoredPayload.Companion.FORMAT|{}FORMAT[0]
+            final fun <get-FORMAT>(): kotlin/Int // one.rarebit.flags.core/StoredPayload.Companion.FORMAT.<get-FORMAT>|<get-FORMAT>(){}[0]
+
+        final fun serializer(): kotlinx.serialization/KSerializer<one.rarebit.flags.core/StoredPayload> // one.rarebit.flags.core/StoredPayload.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final class one.rarebit.flags.core/StringFlag : one.rarebit.flags.core/FlagDefinition<kotlin/String> { // one.rarebit.flags.core/StringFlag|null[0]
+    constructor <init>(kotlin/String, kotlin/String, kotlin.collections/Set<kotlin/String>? = ...) // one.rarebit.flags.core/StringFlag.<init>|<init>(kotlin.String;kotlin.String;kotlin.collections.Set<kotlin.String>?){}[0]
+
+    final val default // one.rarebit.flags.core/StringFlag.default|{}default[0]
+        final fun <get-default>(): kotlin/String // one.rarebit.flags.core/StringFlag.default.<get-default>|<get-default>(){}[0]
+    final val values // one.rarebit.flags.core/StringFlag.values|{}values[0]
+        final fun <get-values>(): kotlin.collections/Set<kotlin/String>? // one.rarebit.flags.core/StringFlag.values.<get-values>|<get-values>(){}[0]
+    final val wire // one.rarebit.flags.core/StringFlag.wire|{}wire[0]
+        final fun <get-wire>(): kotlin/String // one.rarebit.flags.core/StringFlag.wire.<get-wire>|<get-wire>(){}[0]
+
+    final fun component1(): kotlin/String // one.rarebit.flags.core/StringFlag.component1|component1(){}[0]
+    final fun component2(): kotlin/String // one.rarebit.flags.core/StringFlag.component2|component2(){}[0]
+    final fun component3(): kotlin.collections/Set<kotlin/String>? // one.rarebit.flags.core/StringFlag.component3|component3(){}[0]
+    final fun copy(kotlin/String = ..., kotlin/String = ..., kotlin.collections/Set<kotlin/String>? = ...): one.rarebit.flags.core/StringFlag // one.rarebit.flags.core/StringFlag.copy|copy(kotlin.String;kotlin.String;kotlin.collections.Set<kotlin.String>?){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // one.rarebit.flags.core/StringFlag.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // one.rarebit.flags.core/StringFlag.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // one.rarebit.flags.core/StringFlag.toString|toString(){}[0]
+}
+
+final class one.rarebit.flags.core/StringLastGoodStore : one.rarebit.flags.core/LastGoodStore { // one.rarebit.flags.core/StringLastGoodStore|null[0]
+    constructor <init>(kotlin.coroutines/SuspendFunction0<kotlin/String?>, kotlin.coroutines/SuspendFunction1<kotlin/String?, kotlin/Unit>) // one.rarebit.flags.core/StringLastGoodStore.<init>|<init>(kotlin.coroutines.SuspendFunction0<kotlin.String?>;kotlin.coroutines.SuspendFunction1<kotlin.String?,kotlin.Unit>){}[0]
+
+    final suspend fun clear() // one.rarebit.flags.core/StringLastGoodStore.clear|clear(){}[0]
+    final suspend fun load(): one.rarebit.flags.core/StoredPayload? // one.rarebit.flags.core/StringLastGoodStore.load|load(){}[0]
+    final suspend fun save(one.rarebit.flags.core/StoredPayload) // one.rarebit.flags.core/StringLastGoodStore.save|save(one.rarebit.flags.core.StoredPayload){}[0]
+}
+
+final class one.rarebit.flags.core/Version : kotlin/Comparable<one.rarebit.flags.core/Version> { // one.rarebit.flags.core/Version|null[0]
+    final val build // one.rarebit.flags.core/Version.build|{}build[0]
+        final fun <get-build>(): kotlin/String? // one.rarebit.flags.core/Version.build.<get-build>|<get-build>(){}[0]
+    final val isPrerelease // one.rarebit.flags.core/Version.isPrerelease|{}isPrerelease[0]
+        final fun <get-isPrerelease>(): kotlin/Boolean // one.rarebit.flags.core/Version.isPrerelease.<get-isPrerelease>|<get-isPrerelease>(){}[0]
+    final val prerelease // one.rarebit.flags.core/Version.prerelease|{}prerelease[0]
+        final fun <get-prerelease>(): kotlin.collections/List<kotlin/String> // one.rarebit.flags.core/Version.prerelease.<get-prerelease>|<get-prerelease>(){}[0]
+
+    final fun compareTo(one.rarebit.flags.core/Version): kotlin/Int // one.rarebit.flags.core/Version.compareTo|compareTo(one.rarebit.flags.core.Version){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // one.rarebit.flags.core/Version.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // one.rarebit.flags.core/Version.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // one.rarebit.flags.core/Version.toString|toString(){}[0]
+
+    final object Companion { // one.rarebit.flags.core/Version.Companion|null[0]
+        final const val MAX_LENGTH // one.rarebit.flags.core/Version.Companion.MAX_LENGTH|{}MAX_LENGTH[0]
+            final fun <get-MAX_LENGTH>(): kotlin/Int // one.rarebit.flags.core/Version.Companion.MAX_LENGTH.<get-MAX_LENGTH>|<get-MAX_LENGTH>(){}[0]
+
+        final fun parse(kotlin/String?): one.rarebit.flags.core/Version? // one.rarebit.flags.core/Version.Companion.parse|parse(kotlin.String?){}[0]
+    }
+}
+
+final class one.rarebit.flags.core/VersionRange { // one.rarebit.flags.core/VersionRange|null[0]
+    final val alternatives // one.rarebit.flags.core/VersionRange.alternatives|{}alternatives[0]
+        final fun <get-alternatives>(): kotlin.collections/List<kotlin.collections/List<one.rarebit.flags.core/RangeComparator<one.rarebit.flags.core/Version>>> // one.rarebit.flags.core/VersionRange.alternatives.<get-alternatives>|<get-alternatives>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // one.rarebit.flags.core/VersionRange.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // one.rarebit.flags.core/VersionRange.hashCode|hashCode(){}[0]
+    final fun matches(kotlin/String?): kotlin/Boolean // one.rarebit.flags.core/VersionRange.matches|matches(kotlin.String?){}[0]
+    final fun matches(one.rarebit.flags.core/Version?): kotlin/Boolean // one.rarebit.flags.core/VersionRange.matches|matches(one.rarebit.flags.core.Version?){}[0]
+    final fun toString(): kotlin/String // one.rarebit.flags.core/VersionRange.toString|toString(){}[0]
+
+    final object Companion { // one.rarebit.flags.core/VersionRange.Companion|null[0]
+        final fun parse(kotlin/String?): one.rarebit.flags.core/VersionRange? // one.rarebit.flags.core/VersionRange.Companion.parse|parse(kotlin.String?){}[0]
+    }
+}
+
+sealed class <#A: kotlin/Any> one.rarebit.flags.core/FlagDefinition { // one.rarebit.flags.core/FlagDefinition|null[0]
+    abstract val default // one.rarebit.flags.core/FlagDefinition.default|{}default[0]
+        abstract fun <get-default>(): #A // one.rarebit.flags.core/FlagDefinition.default.<get-default>|<get-default>(){}[0]
+    abstract val wire // one.rarebit.flags.core/FlagDefinition.wire|{}wire[0]
+        abstract fun <get-wire>(): kotlin/String // one.rarebit.flags.core/FlagDefinition.wire.<get-wire>|<get-wire>(){}[0]
+}
+
+final object one.rarebit.flags.core/Etag { // one.rarebit.flags.core/Etag|null[0]
+    final fun of(kotlin/String, kotlinx.serialization.json/JsonArray): kotlin/String // one.rarebit.flags.core/Etag.of|of(kotlin.String;kotlinx.serialization.json.JsonArray){}[0]
+}
+
+final object one.rarebit.flags.core/Jcs { // one.rarebit.flags.core/Jcs|null[0]
+    final fun canonicalize(kotlinx.serialization.json/JsonElement): kotlin/String // one.rarebit.flags.core/Jcs.canonicalize|canonicalize(kotlinx.serialization.json.JsonElement){}[0]
+}
+
+final object one.rarebit.flags.core/Sha256 { // one.rarebit.flags.core/Sha256|null[0]
+    final fun digest(kotlin/ByteArray): kotlin/ByteArray // one.rarebit.flags.core/Sha256.digest|digest(kotlin.ByteArray){}[0]
+    final fun hex(kotlin/ByteArray): kotlin/String // one.rarebit.flags.core/Sha256.hex|hex(kotlin.ByteArray){}[0]
+}
+
+final val one.rarebit.flags.core/state // one.rarebit.flags.core/state|@one.rarebit.flags.core.FlagRead<kotlin.Boolean>{}state[0]
+    final fun (one.rarebit.flags.core/FlagRead<kotlin/Boolean>).<get-state>(): one.rarebit.flags.core/FlagState // one.rarebit.flags.core/state.<get-state>|<get-state>@one.rarebit.flags.core.FlagRead<kotlin.Boolean>(){}[0]
+
+final fun <#A: kotlin/Any> one.rarebit.flags.core/readFlag(one.rarebit.flags.core/FlagPayload?, one.rarebit.flags.core/FlagDefinition<#A>): one.rarebit.flags.core/FlagRead<#A> // one.rarebit.flags.core/readFlag|readFlag(one.rarebit.flags.core.FlagPayload?;one.rarebit.flags.core.FlagDefinition<0:0>){0§<kotlin.Any>}[0]

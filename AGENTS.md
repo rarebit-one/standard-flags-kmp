@@ -8,10 +8,20 @@ This is a public repository: keep code, docs, commits and PRs generic.
 - Work in a linked worktree (`git worktree add .worktrees/<slug> -b <branch> origin/main`), never in the main checkout.
 - Commits are signed. Changes go through pull requests; `main` is protected.
 - Run `./gradlew check` before pushing. On macOS it also runs the iOS simulator tests; `./gradlew iosSimulatorTests` runs only those.
+- `check` also compares each Kotlin module's public API with its `api/` dump. After an intended API change, run `./gradlew updateKotlinAbi` on macOS (so the iOS klib dump is complete) and commit the dumps.
 
 ## Layout
 
 Gradle modules share `gradle/libs.versions.toml` and the coordinates in `gradle.properties` (`GROUP=one.rarebit.flags`).
+
+- `standard-flags-core`: wire model, validation, reads, SemVer ranges, last-good store, ETag. No HTTP.
+- `standard-flags-ofrep`: the Ktor OFREP client and `StandardFlagsClient` (the cache and apply policy).
+- `standard-flags-openfeature`: the OpenFeature provider. Keep it optional: nothing else depends on it.
+- `standard-flags-status`: `/client/status` and 426 detection.
+- `standard-flags-gradle-plugin`: the contract check, in Java so it adds no Kotlin stdlib to app builds.
+- `conformance/`: the gem's wire fixtures, vendored at the commit in `PIN.json`. Never edit them by hand: run `scripts/sync-conformance` (`--ref <ref>` moves the pin). The core module embeds them at build time and runs them on every target.
+
+The wire contract lives in the gem (`conformance/README.md` there and here). When it changes, bump the pin, then make the runner pass.
 
 ## Releasing
 

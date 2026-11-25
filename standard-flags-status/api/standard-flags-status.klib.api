@@ -1,0 +1,129 @@
+// Klib ABI Dump
+// Targets: [iosArm64, iosSimulatorArm64]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <standard-flags-kmp:standard-flags-status>
+sealed interface one.rarebit.flags.status/ClientStatus { // one.rarebit.flags.status/ClientStatus|null[0]
+    abstract val details // one.rarebit.flags.status/ClientStatus.details|{}details[0]
+        abstract fun <get-details>(): one.rarebit.flags.status/StatusDetails? // one.rarebit.flags.status/ClientStatus.details.<get-details>|<get-details>(){}[0]
+
+    final class Ok : one.rarebit.flags.status/ClientStatus { // one.rarebit.flags.status/ClientStatus.Ok|null[0]
+        constructor <init>(one.rarebit.flags.status/StatusDetails) // one.rarebit.flags.status/ClientStatus.Ok.<init>|<init>(one.rarebit.flags.status.StatusDetails){}[0]
+
+        final val details // one.rarebit.flags.status/ClientStatus.Ok.details|{}details[0]
+            final fun <get-details>(): one.rarebit.flags.status/StatusDetails // one.rarebit.flags.status/ClientStatus.Ok.details.<get-details>|<get-details>(){}[0]
+
+        final fun component1(): one.rarebit.flags.status/StatusDetails // one.rarebit.flags.status/ClientStatus.Ok.component1|component1(){}[0]
+        final fun copy(one.rarebit.flags.status/StatusDetails = ...): one.rarebit.flags.status/ClientStatus.Ok // one.rarebit.flags.status/ClientStatus.Ok.copy|copy(one.rarebit.flags.status.StatusDetails){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // one.rarebit.flags.status/ClientStatus.Ok.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // one.rarebit.flags.status/ClientStatus.Ok.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // one.rarebit.flags.status/ClientStatus.Ok.toString|toString(){}[0]
+    }
+
+    final class Unknown : one.rarebit.flags.status/ClientStatus { // one.rarebit.flags.status/ClientStatus.Unknown|null[0]
+        constructor <init>(one.rarebit.flags.status/StatusDetails? = ...) // one.rarebit.flags.status/ClientStatus.Unknown.<init>|<init>(one.rarebit.flags.status.StatusDetails?){}[0]
+
+        final val details // one.rarebit.flags.status/ClientStatus.Unknown.details|{}details[0]
+            final fun <get-details>(): one.rarebit.flags.status/StatusDetails? // one.rarebit.flags.status/ClientStatus.Unknown.details.<get-details>|<get-details>(){}[0]
+
+        final fun component1(): one.rarebit.flags.status/StatusDetails? // one.rarebit.flags.status/ClientStatus.Unknown.component1|component1(){}[0]
+        final fun copy(one.rarebit.flags.status/StatusDetails? = ...): one.rarebit.flags.status/ClientStatus.Unknown // one.rarebit.flags.status/ClientStatus.Unknown.copy|copy(one.rarebit.flags.status.StatusDetails?){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // one.rarebit.flags.status/ClientStatus.Unknown.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // one.rarebit.flags.status/ClientStatus.Unknown.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // one.rarebit.flags.status/ClientStatus.Unknown.toString|toString(){}[0]
+    }
+
+    final class UpgradeRecommended : one.rarebit.flags.status/ClientStatus { // one.rarebit.flags.status/ClientStatus.UpgradeRecommended|null[0]
+        constructor <init>(one.rarebit.flags.status/StatusDetails, kotlin/String?) // one.rarebit.flags.status/ClientStatus.UpgradeRecommended.<init>|<init>(one.rarebit.flags.status.StatusDetails;kotlin.String?){}[0]
+
+        final val details // one.rarebit.flags.status/ClientStatus.UpgradeRecommended.details|{}details[0]
+            final fun <get-details>(): one.rarebit.flags.status/StatusDetails // one.rarebit.flags.status/ClientStatus.UpgradeRecommended.details.<get-details>|<get-details>(){}[0]
+        final val enforceAt // one.rarebit.flags.status/ClientStatus.UpgradeRecommended.enforceAt|{}enforceAt[0]
+            final fun <get-enforceAt>(): kotlin/String? // one.rarebit.flags.status/ClientStatus.UpgradeRecommended.enforceAt.<get-enforceAt>|<get-enforceAt>(){}[0]
+
+        final fun component1(): one.rarebit.flags.status/StatusDetails // one.rarebit.flags.status/ClientStatus.UpgradeRecommended.component1|component1(){}[0]
+        final fun component2(): kotlin/String? // one.rarebit.flags.status/ClientStatus.UpgradeRecommended.component2|component2(){}[0]
+        final fun copy(one.rarebit.flags.status/StatusDetails = ..., kotlin/String? = ...): one.rarebit.flags.status/ClientStatus.UpgradeRecommended // one.rarebit.flags.status/ClientStatus.UpgradeRecommended.copy|copy(one.rarebit.flags.status.StatusDetails;kotlin.String?){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // one.rarebit.flags.status/ClientStatus.UpgradeRecommended.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // one.rarebit.flags.status/ClientStatus.UpgradeRecommended.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // one.rarebit.flags.status/ClientStatus.UpgradeRecommended.toString|toString(){}[0]
+    }
+
+    final class UpgradeRequired : one.rarebit.flags.status/ClientStatus { // one.rarebit.flags.status/ClientStatus.UpgradeRequired|null[0]
+        constructor <init>(one.rarebit.flags.status/StatusDetails) // one.rarebit.flags.status/ClientStatus.UpgradeRequired.<init>|<init>(one.rarebit.flags.status.StatusDetails){}[0]
+
+        final val details // one.rarebit.flags.status/ClientStatus.UpgradeRequired.details|{}details[0]
+            final fun <get-details>(): one.rarebit.flags.status/StatusDetails // one.rarebit.flags.status/ClientStatus.UpgradeRequired.details.<get-details>|<get-details>(){}[0]
+
+        final fun component1(): one.rarebit.flags.status/StatusDetails // one.rarebit.flags.status/ClientStatus.UpgradeRequired.component1|component1(){}[0]
+        final fun copy(one.rarebit.flags.status/StatusDetails = ...): one.rarebit.flags.status/ClientStatus.UpgradeRequired // one.rarebit.flags.status/ClientStatus.UpgradeRequired.copy|copy(one.rarebit.flags.status.StatusDetails){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // one.rarebit.flags.status/ClientStatus.UpgradeRequired.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // one.rarebit.flags.status/ClientStatus.UpgradeRequired.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // one.rarebit.flags.status/ClientStatus.UpgradeRequired.toString|toString(){}[0]
+    }
+
+    final object Companion { // one.rarebit.flags.status/ClientStatus.Companion|null[0]
+        final val Initial // one.rarebit.flags.status/ClientStatus.Companion.Initial|{}Initial[0]
+            final fun <get-Initial>(): one.rarebit.flags.status/ClientStatus // one.rarebit.flags.status/ClientStatus.Companion.Initial.<get-Initial>|<get-Initial>(){}[0]
+    }
+}
+
+final class one.rarebit.flags.status/ClientStatusClient { // one.rarebit.flags.status/ClientStatusClient|null[0]
+    constructor <init>(io.ktor.client/HttpClient, kotlin/String, one.rarebit.flags.ofrep/ClientInfo?, one.rarebit.flags.status/ClientStatus = ...) // one.rarebit.flags.status/ClientStatusClient.<init>|<init>(io.ktor.client.HttpClient;kotlin.String;one.rarebit.flags.ofrep.ClientInfo?;one.rarebit.flags.status.ClientStatus){}[0]
+
+    final val status // one.rarebit.flags.status/ClientStatusClient.status|{}status[0]
+        final fun <get-status>(): kotlinx.coroutines.flow/StateFlow<one.rarebit.flags.status/ClientStatus> // one.rarebit.flags.status/ClientStatusClient.status.<get-status>|<get-status>(){}[0]
+
+    final fun reportUpgradeRequired(one.rarebit.flags.status/ClientStatus.UpgradeRequired) // one.rarebit.flags.status/ClientStatusClient.reportUpgradeRequired|reportUpgradeRequired(one.rarebit.flags.status.ClientStatus.UpgradeRequired){}[0]
+    final suspend fun check(): one.rarebit.flags.status/ClientStatus? // one.rarebit.flags.status/ClientStatusClient.check|check(){}[0]
+}
+
+final class one.rarebit.flags.status/StatusDetails { // one.rarebit.flags.status/StatusDetails|null[0]
+    constructor <init>(kotlin/String? = ..., kotlin/String? = ..., kotlin/String? = ..., kotlin/String? = ..., kotlin/String? = ..., kotlin/String? = ...) // one.rarebit.flags.status/StatusDetails.<init>|<init>(kotlin.String?;kotlin.String?;kotlin.String?;kotlin.String?;kotlin.String?;kotlin.String?){}[0]
+
+    final val enforceAt // one.rarebit.flags.status/StatusDetails.enforceAt|{}enforceAt[0]
+        final fun <get-enforceAt>(): kotlin/String? // one.rarebit.flags.status/StatusDetails.enforceAt.<get-enforceAt>|<get-enforceAt>(){}[0]
+    final val minVersion // one.rarebit.flags.status/StatusDetails.minVersion|{}minVersion[0]
+        final fun <get-minVersion>(): kotlin/String? // one.rarebit.flags.status/StatusDetails.minVersion.<get-minVersion>|<get-minVersion>(){}[0]
+    final val platform // one.rarebit.flags.status/StatusDetails.platform|{}platform[0]
+        final fun <get-platform>(): kotlin/String? // one.rarebit.flags.status/StatusDetails.platform.<get-platform>|<get-platform>(){}[0]
+    final val recommended // one.rarebit.flags.status/StatusDetails.recommended|{}recommended[0]
+        final fun <get-recommended>(): kotlin/String? // one.rarebit.flags.status/StatusDetails.recommended.<get-recommended>|<get-recommended>(){}[0]
+    final val storeUrl // one.rarebit.flags.status/StatusDetails.storeUrl|{}storeUrl[0]
+        final fun <get-storeUrl>(): kotlin/String? // one.rarebit.flags.status/StatusDetails.storeUrl.<get-storeUrl>|<get-storeUrl>(){}[0]
+    final val version // one.rarebit.flags.status/StatusDetails.version|{}version[0]
+        final fun <get-version>(): kotlin/String? // one.rarebit.flags.status/StatusDetails.version.<get-version>|<get-version>(){}[0]
+
+    final fun component1(): kotlin/String? // one.rarebit.flags.status/StatusDetails.component1|component1(){}[0]
+    final fun component2(): kotlin/String? // one.rarebit.flags.status/StatusDetails.component2|component2(){}[0]
+    final fun component3(): kotlin/String? // one.rarebit.flags.status/StatusDetails.component3|component3(){}[0]
+    final fun component4(): kotlin/String? // one.rarebit.flags.status/StatusDetails.component4|component4(){}[0]
+    final fun component5(): kotlin/String? // one.rarebit.flags.status/StatusDetails.component5|component5(){}[0]
+    final fun component6(): kotlin/String? // one.rarebit.flags.status/StatusDetails.component6|component6(){}[0]
+    final fun copy(kotlin/String? = ..., kotlin/String? = ..., kotlin/String? = ..., kotlin/String? = ..., kotlin/String? = ..., kotlin/String? = ...): one.rarebit.flags.status/StatusDetails // one.rarebit.flags.status/StatusDetails.copy|copy(kotlin.String?;kotlin.String?;kotlin.String?;kotlin.String?;kotlin.String?;kotlin.String?){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // one.rarebit.flags.status/StatusDetails.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // one.rarebit.flags.status/StatusDetails.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // one.rarebit.flags.status/StatusDetails.toString|toString(){}[0]
+}
+
+final class one.rarebit.flags.status/UpgradeRequiredDetectorConfig { // one.rarebit.flags.status/UpgradeRequiredDetectorConfig|null[0]
+    constructor <init>() // one.rarebit.flags.status/UpgradeRequiredDetectorConfig.<init>|<init>(){}[0]
+
+    final var status // one.rarebit.flags.status/UpgradeRequiredDetectorConfig.status|{}status[0]
+        final fun <get-status>(): one.rarebit.flags.status/ClientStatusClient? // one.rarebit.flags.status/UpgradeRequiredDetectorConfig.status.<get-status>|<get-status>(){}[0]
+        final fun <set-status>(one.rarebit.flags.status/ClientStatusClient?) // one.rarebit.flags.status/UpgradeRequiredDetectorConfig.status.<set-status>|<set-status>(one.rarebit.flags.status.ClientStatusClient?){}[0]
+}
+
+final object one.rarebit.flags.status/ClientStatusParser { // one.rarebit.flags.status/ClientStatusParser|null[0]
+    final const val UPGRADE_REQUIRED_CODE // one.rarebit.flags.status/ClientStatusParser.UPGRADE_REQUIRED_CODE|{}UPGRADE_REQUIRED_CODE[0]
+        final fun <get-UPGRADE_REQUIRED_CODE>(): kotlin/String // one.rarebit.flags.status/ClientStatusParser.UPGRADE_REQUIRED_CODE.<get-UPGRADE_REQUIRED_CODE>|<get-UPGRADE_REQUIRED_CODE>(){}[0]
+
+    final fun parse(kotlin/String): one.rarebit.flags.status/ClientStatus? // one.rarebit.flags.status/ClientStatusParser.parse|parse(kotlin.String){}[0]
+    final fun parseUpgradeRequired(kotlin/String): one.rarebit.flags.status/ClientStatus.UpgradeRequired? // one.rarebit.flags.status/ClientStatusParser.parseUpgradeRequired|parseUpgradeRequired(kotlin.String){}[0]
+}
+
+final val one.rarebit.flags.status/UpgradeRequiredDetector // one.rarebit.flags.status/UpgradeRequiredDetector|{}UpgradeRequiredDetector[0]
+    final fun <get-UpgradeRequiredDetector>(): io.ktor.client.plugins.api/ClientPlugin<one.rarebit.flags.status/UpgradeRequiredDetectorConfig> // one.rarebit.flags.status/UpgradeRequiredDetector.<get-UpgradeRequiredDetector>|<get-UpgradeRequiredDetector>(){}[0]
