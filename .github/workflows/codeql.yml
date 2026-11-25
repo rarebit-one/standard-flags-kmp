@@ -1,0 +1,56 @@
+name: CodeQL
+
+on:
+  pull_request:
+    branches: [main]
+    paths-ignore:
+      - '.github/**'
+  push:
+    branches: [main]
+    paths-ignore:
+      - '.github/**'
+  schedule:
+    - cron: "0 6 * * 1"
+
+permissions:
+  contents: read
+  security-events: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze:
+    name: Analyze (Kotlin)
+    # Paused: CodeQL rejects Kotlin 2.4.20 ("too recent", as of codeql-action
+    # v4.38.1 / bundle v2.27.1), so this job has failed on main since
+    # 2026-09-21. Once a CodeQL release supports it, bump codeql-action and
+    # run: gh variable set CODEQL_KOTLIN -R rarebit-one/standard-flags-kmp --body enabled
+    if: vars.CODEQL_KOTLIN == 'enabled'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
+        with:
+          distribution: zulu
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
+      - uses: github/codeql-action/init@1bd86f2fdb4b86187fa4059f16f31a3202acc9ea # v4.39.4
+        with:
+          languages: java-kotlin
+      # Manual build instead of `autobuild`. CodeQL's autobuild script
+      # picks the wrong Gradle target for this multi-module project and
+      # fails immediately. `./gradlew assemble` compiles every subproject's
+      # sources without running tests — exactly what CodeQL needs to
+      # extract. (`classes` is not a root-project task on KMP-style
+      # multi-module Gradle setups.)
+      - name: Compile sources for CodeQL extraction
+        run: ./gradlew --no-daemon assemble
+      - uses: github/codeql-action/analyze@1bd86f2fdb4b86187fa4059f16f31a3202acc9ea # v4.39.4
+        with:
+          category: "/language:java-kotlin"
+
