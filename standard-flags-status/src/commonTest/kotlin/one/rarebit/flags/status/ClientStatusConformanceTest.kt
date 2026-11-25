@@ -9,19 +9,18 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import one.rarebit.flags.core.conformance.ConformanceFixtures
 import kotlin.test.Test
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 /**
  * `wire/client_status.json` (standard_flags 3c): every case's expected payload
  * is a golden `/client/status` body, and the parser must read each field
- * exactly. Server-scope cases still have valid bodies, so they run too. The
- * fixture isn't at the pinned commit yet; this runs as soon as a pin bump
- * vendors it.
+ * exactly. Server-scope cases still have valid bodies, so they run too.
  */
 class ClientStatusConformanceTest {
     @Test
     fun parsesEveryGoldenStatusBody() {
-        val text = ConformanceFixtures.files["wire/client_status.json"] ?: return
+        val text = assertNotNull(ConformanceFixtures.files["wire/client_status.json"], "wire/client_status.json isn't vendored")
         val document = Json.parseToJsonElement(text).jsonObject
         val failures = mutableListOf<String>()
         val cases = document.getValue("cases").jsonArray.map { it.jsonObject }

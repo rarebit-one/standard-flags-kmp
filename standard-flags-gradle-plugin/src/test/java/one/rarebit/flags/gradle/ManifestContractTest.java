@@ -2,6 +2,7 @@ package one.rarebit.flags.gradle;
 
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -24,18 +25,22 @@ class ManifestContractTest {
         + "  \"tombstones\": [{\"key\": \"old_flag\", \"removed\": \"2026-10-01\"}]\n"
         + "}\n";
 
-    // The planned version 2: per-audience wire lists and deprecated wires on tombstones.
+    // Version 2 as the server writes it: per-audience wire lists and deprecated wires on tombstones.
     static final String V2 = "{\n"
         + "  \"version\": 2,\n"
         + "  \"audiences\": {\"mobile\": {\"public\": false}, \"device\": {\"public\": true}},\n"
         + "  \"flags\": [\n"
-        + "    {\"key\": \"ai\", \"type\": \"boolean\", \"audiences\": {\"mobile\": [\"chat_enabled\", \"insights_enabled\"]}}\n"
+        + "    {\"key\": \"ai\", \"kind\": \"kill_switch\", \"type\": \"boolean\", \"values\": [true, false], \"default\": true,\n"
+        + "     \"audiences\": {\"mobile\": [\"chat_enabled\", \"insights_enabled\"]}, \"min_client\": {}}\n"
         + "  ],\n"
         + "  \"tombstones\": [\n"
-        + "    {\"key\": \"banner\", \"removed\": \"2026-11-01\", \"until\": \"2027-01-31\",\n"
+        + "    {\"key\": \"banner\", \"removed\": \"2026-11-01\", \"until\": \"2027-01-31\", \"until_clients\": {},\n"
         + "     \"serve\": {\"mobile\": {\"bannerOn\": false, \"bannerText\": \"hello\"}}}\n"
-        + "  ]\n"
+        + "  ],\n"
+        + "  \"clients\": {}\n"
         + "}\n";
+
+    static final LocalDate TODAY = LocalDate.parse("2027-01-15");
 
     private static Map<String, ManifestContract.Type> reads(Object... pairs) {
         Map<String, ManifestContract.Type> out = new LinkedHashMap<>();
@@ -50,7 +55,7 @@ class ManifestContractTest {
         ManifestContract.Result result = contract.check("mobile", reads(
             "chat_enabled", ManifestContract.Type.BOOLEAN,
             "insights_enabled", ManifestContract.Type.BOOLEAN,
-            "homeHero", ManifestContract.Type.STRING));
+            "homeHero", ManifestContract.Type.STRING), TODAY);
         assertTrue(result.ok(), result.errors.toString());
         assertTrue(result.warnings.isEmpty());
     }
@@ -59,7 +64,7 @@ class ManifestContractTest {
     void failsAWireTheAudienceIsNotExposed() {
         ManifestContract.Result result = ManifestContract.parse(V1).check("mobile", reads(
             "chat", ManifestContract.Type.BOOLEAN,
-            "tester_feedback", ManifestContract.Type.BOOLEAN));
+            "tester_feedback", ManifestContract.Type.BOOLEAN), TODAY);
         assertEquals(2, result.errors.size(), result.errors.toString());
         assertTrue(result.errors.get(0).contains("\"chat\" is not exposed to audience \"mobile\" (only to [web])"));
         assertTrue(result.errors.get(1).contains("\"tester_feedback\" is not exposed"));
@@ -67,13 +72,13 @@ class ManifestContractTest {
 
     @Test
     void failsATypeChange() {
-        ManifestContract.Result result = ManifestContract.parse(V1).check("mobile", reads("homeHero", ManifestContract.Type.BOOLEAN));
+        ManifestContract.Result result = ManifestContract.parse(V1).check("mobile", reads("homeHero", ManifestContract.Type.BOOLEAN), TODAY);
         assertEquals("wire \"homeHero\" is a string on the server, but the app reads a boolean", result.errors.get(0));
     }
 
     @Test
     void failsAnUnknownAudience() {
-        ManifestContract.Result result = ManifestContract.parse(V1).check("watch", reads("chat", ManifestContract.Type.BOOLEAN));
+        ManifestContract.Result result = ManifestContract.parse(V1).check("watch", reads("chat", ManifestContract.Type.BOOLEAN), TODAY);
         assertTrue(result.errors.get(0).startsWith("the manifest has no audience \"watch\""));
     }
 
@@ -84,23 +89,36 @@ class ManifestContractTest {
         ManifestContract.Result result = contract.check("mobile", reads(
             "insights_enabled", ManifestContract.Type.BOOLEAN,
             "bannerOn", ManifestContract.Type.BOOLEAN,
-            "bannerText", ManifestContract.Type.STRING));
+            "bannerText", ManifestContract.Type.STRING), TODAY);
         assertTrue(result.ok(), result.errors.toString());
         assertEquals(2, result.warnings.size());
         assertTrue(result.warnings.get(0).contains("until 2027-01-31"));
-        assertEquals(1, contract.check("mobile", reads("bannerText", ManifestContract.Type.BOOLEAN)).errors.size());
+        assertEquals(1, contract.check("mobile", reads("bannerText", ManifestContract.Type.BOOLEAN), TODAY).errors.size());
+    }
+
+    @Test
+    void aDeprecatedWireFailsOnceItsUntilHasPassed() {
+        ManifestContract contract = ManifestContract.parse(V2);
+        Map<String, ManifestContract.Type> banner = reads("bannerOn", ManifestContract.Type.BOOLEAN);
+        assertTrue(contract.check("mobile", banner, LocalDate.parse("2027-01-31")).ok(), "until is inclusive");
+        ManifestContract.Result gone = contract.check("mobile", banner, LocalDate.parse("2027-02-01"));
+        assertEquals("wire \"bannerOn\" is no longer served: tombstone banner served it until 2027-01-31, so the app reads its code default",
+            gone.errors.get(0));
+        assertTrue(gone.warnings.isEmpty());
+        assertTrue(contract.check("mobile", reads("insights_enabled", ManifestContract.Type.BOOLEAN), LocalDate.parse("2030-01-01")).ok(),
+            "a live flag never expires");
     }
 
     @Test
     void failsAStringValueTheAppDoesNotDeclare() {
         Map<String, java.util.Set<String>> values = new LinkedHashMap<>();
         values.put("homeHero", new java.util.LinkedHashSet<>(java.util.Arrays.asList("control", "legacy")));
-        ManifestContract.Result result = ManifestContract.parse(V1).check("mobile", reads("homeHero", ManifestContract.Type.STRING), values);
+        ManifestContract.Result result = ManifestContract.parse(V1).check("mobile", reads("homeHero", ManifestContract.Type.STRING), values, TODAY);
         assertEquals("wire \"homeHero\" can carry [savings], which the app doesn't declare (it would read its code default)", result.errors.get(0));
         assertEquals("wire \"homeHero\": the server never sends [legacy], which the app declares", result.warnings.get(0));
 
         values.put("homeHero", new java.util.LinkedHashSet<>(java.util.Arrays.asList("control", "savings")));
-        assertTrue(ManifestContract.parse(V1).check("mobile", reads("homeHero", ManifestContract.Type.STRING), values).ok());
+        assertTrue(ManifestContract.parse(V1).check("mobile", reads("homeHero", ManifestContract.Type.STRING), values, TODAY).ok());
     }
 
     @Test

@@ -14,28 +14,25 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 /**
  * Runs the shared wire/manifest_check.json (standard_flags 3d) through
  * {@link ManifestCheck}, so the Gradle check and the server's
  * {@code standard_flags:manifest:check} agree on what breaks a shipped build.
- * Server-scope cases (a version 1 committed manifest) are skipped.
+ * The server-scope case (a version 1 committed manifest) runs too: the plugin
+ * reads a version 1 baseline as the server does.
  */
 class ManifestCheckConformanceTest {
     @Test
     void runsEveryWireCase() throws IOException {
         File fixture = new File(System.getProperty("standardFlags.conformance"), "wire/manifest_check.json");
-        assumeTrue(fixture.isFile(), "wire/manifest_check.json isn't vendored at the pinned commit");
+        assertTrue(fixture.isFile(), "wire/manifest_check.json isn't vendored: " + fixture);
         Map<?, ?> document = (Map<?, ?>) new JsonSlurper().parseText(new String(Files.readAllBytes(fixture.toPath()), StandardCharsets.UTF_8));
-        String fileScope = String.valueOf(document.get("scope"));
         LocalDate fileToday = LocalDate.parse(String.valueOf(document.get("today")));
         List<String> failures = new ArrayList<>();
         int ran = 0;
         for (Object item : (List<?>) document.get("cases")) {
             Map<?, ?> c = (Map<?, ?>) item;
-            Object scope = c.get("scope") != null ? c.get("scope") : fileScope;
-            if (!"wire".equals(scope)) continue;
             ran++;
             String name = String.valueOf(c.get("name"));
             LocalDate today = c.get("today") != null ? LocalDate.parse(String.valueOf(c.get("today"))) : fileToday;
@@ -65,7 +62,7 @@ class ManifestCheckConformanceTest {
             for (Object a : (List<?>) expected.get("audiences_made_private")) madePrivate.add(String.valueOf(((Map<?, ?>) a).get("audience")));
             if (!madePrivate.equals(result.audiencesMadePrivate)) failures.add(name + ": made private " + result.audiencesMadePrivate + ", expected " + madePrivate);
         }
-        assertTrue(ran > 0, "no wire cases");
+        assertTrue(ran > 0, "no cases");
         assertTrue(failures.isEmpty(), String.join("\n", failures));
     }
 

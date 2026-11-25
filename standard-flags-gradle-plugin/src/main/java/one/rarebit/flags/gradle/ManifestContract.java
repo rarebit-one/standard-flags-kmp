@@ -2,6 +2,8 @@ package one.rarebit.flags.gradle;
 
 import groovy.json.JsonSlurper;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -17,17 +19,15 @@ import java.util.TreeSet;
  * <p>It fails when the app reads a wire its audience isn't exposed (a typo, a
  * flag that was never exposed, or one removed without a deprecated wire) or a
  * wire whose type differs from the server's. A wire served only by a tombstone
- * (a deprecated static value) passes with a warning that names its end date.
+ * (a deprecated static value) passes with a warning that names its end date
+ * while it is still served ({@code today <= until}); after that the server no
+ * longer sends it, so reading it fails, as the server's deprecation lifecycle
+ * and {@code wire/manifest_check.json} have it.
  *
- * <p>Reads manifest version 1 (the gem's current format) and version 2 (per
- * audience wire lists and tombstone {@code serve} blocks). A later format fails
- * the check rather than passing silently.
- *
- * <p>TODO(standard_flags 3d): version 2 is read as the gem's plan documents it.
- * When the gem ships manifest v2 and {@code wire/manifest_check.json}, vendor
- * them (scripts/sync-conformance) and run the fixture's cases here, so this
- * check and the server's {@code flags:manifest:check} agree on removed wires and
- * type changes.
+ * <p>Reads manifest version 1 (standard_flags 0.3.0 and earlier) and version 2
+ * (per audience wire lists and tombstone {@code serve} blocks). A later format
+ * fails the check rather than passing silently. {@link ManifestCheck} compares
+ * a baseline with the current manifest as the server does.
  */
 public final class ManifestContract {
     /** A wire's value type on the wire. */
@@ -157,18 +157,19 @@ public final class ManifestContract {
         return new ManifestContract(v, audiences);
     }
 
-    /** Checks the wires an app reads ({@code wire → type}) against {@code audience}. */
-    public Result check(String audience, Map<String, Type> reads) {
-        return check(audience, reads, Collections.<String, java.util.Set<String>>emptyMap());
+    /** Checks the wires an app reads ({@code wire → type}) against {@code audience} on {@code today} (UTC). */
+    public Result check(String audience, Map<String, Type> reads, LocalDate today) {
+        return check(audience, reads, Collections.<String, java.util.Set<String>>emptyMap(), today);
     }
 
     /**
-     * Checks the wires an app reads against {@code audience}. {@code values}
-     * holds, for string wires, the values the app understands: a value the
-     * server can send that isn't among them fails (the app would read its code
-     * default), and one the server never sends is a warning.
+     * Checks the wires an app reads against {@code audience} on {@code today}
+     * (UTC). {@code values} holds, for string wires, the values the app
+     * understands: a value the server can send that isn't among them fails (the
+     * app would read its code default), and one the server never sends is a
+     * warning.
      */
-    public Result check(String audience, Map<String, Type> reads, Map<String, java.util.Set<String>> values) {
+    public Result check(String audience, Map<String, Type> reads, Map<String, java.util.Set<String>> values, LocalDate today) {
         List<String> errors = new ArrayList<>();
         List<String> warnings = new ArrayList<>();
         if (!audiences.containsKey(audience)) {
@@ -186,6 +187,9 @@ public final class ManifestContract {
                 }
                 errors.add("wire \"" + wire + "\" is not exposed to audience \"" + audience + "\""
                     + (elsewhere.isEmpty() ? "" : " (only to " + elsewhere + ")"));
+            } else if (exposure.deprecated() && !servedOn(exposure.until, today)) {
+                errors.add("wire \"" + wire + "\" is no longer served: tombstone " + exposure.source + " served it until "
+                    + exposure.until + ", so the app reads its code default");
             } else if (exposure.type != read.getValue()) {
                 errors.add("wire \"" + wire + "\" is a " + exposure.type + " on the server, but the app reads a " + read.getValue());
             } else {
@@ -210,6 +214,16 @@ public final class ManifestContract {
             }
         }
         return new Result(errors, warnings);
+    }
+
+    /** Whether a static wire is still served: {@code today <= until}. An until that isn't a date never is. */
+    private static boolean servedOn(String until, LocalDate today) {
+        if (!until.matches("[0-9]{4}-[0-9]{2}-[0-9]{2}")) return false;
+        try {
+            return !today.isAfter(LocalDate.parse(until));
+        } catch (DateTimeParseException e) {
+            return false;
+        }
     }
 
     private static String key(Map<?, ?> entry, String what) {

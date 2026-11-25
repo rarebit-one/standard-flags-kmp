@@ -44,6 +44,9 @@ public class FlagCache(public val limits: PayloadLimits = PayloadLimits()) {
  *   is never applied either.
  * @property format the record's format; a record of a format this version
  *   doesn't know is ignored.
+ * @property refusedEtag an If-None-Match value the server kept refusing
+ *   (400, 414 or 431), so it isn't sent again after a restart. A payload with
+ *   another version sends its own.
  */
 @Serializable
 public data class StoredPayload(
@@ -51,6 +54,7 @@ public data class StoredPayload(
     val contextKey: String? = null,
     val client: String? = null,
     val format: Int = FORMAT,
+    val refusedEtag: String? = null,
 ) {
     public companion object {
         /** The format this version writes and reads. */
@@ -65,7 +69,8 @@ public data class StoredPayload(
  *
  * A custom store must keep every field of [StoredPayload], `client` and
  * `format` included: a record that comes back without them never matches the
- * running build, so it is never applied. Return null when nothing is stored.
+ * running build, so it is never applied. Dropping `refusedEtag` only costs
+ * a few refused requests after a restart. Return null when nothing is stored.
  * A store may throw; the client reports the failure (`storeError`) and keeps
  * its in-memory values, so a throw is never fatal, only unsaved.
  */

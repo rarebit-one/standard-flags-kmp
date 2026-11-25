@@ -1,19 +1,15 @@
 {
   "repository": "rarebit-one/standard_flags",
-  "commit": "7144ea14862a3c9534955d61b11d78572dd180a8",
+  "commit": "efc0be41fed2a3b12e7c855b2332ed424ce04be5",
   "files": {
-    "README.md": "sha256:f52580679901e18b053768d89486284ef9eb49bb4dedd9588d171b7a60e4eac4",
-    "schema/fixture.schema.json": "sha256:c57c16ea93d137241c979fb5a4a559857dba067bbee5c39a3db76d211b3730a5",
+    "README.md": "sha256:d0c49e80289832eee7ccee4e85efd2fb400c3a5dd4178493b8b17e43fc7be496",
+    "schema/fixture.schema.json": "sha256:a65051cd48f3c99f8b14b17afca22807bf1c4324cfd20b64872d27d6748acf0d",
     "schema/manifest.schema.json": "sha256:2977bd74a46445eb3170e7d444231fa6e7a20cf936658be1e87115f5ef106694",
     "versions/version_ranges.json": "sha256:c845abb5b830ff534aa3ecc925672c27a34d5ed5e2a872bc7c4c15019ffe2788",
-    "wire/client_state.json": "sha256:c819ea753c3193a0e0f4ac1d43f7b36e6e99062eb51ec25c157cbbaa7287b5cc",
+    "wire/client_state.json": "sha256:cce69896cc1160402f2ab7af9d6a8fb7854bb09af436e8a5a07fcb86741bf56a",
     "wire/client_status.json": "sha256:423f8db22145a8e500d6eb42c168443fca737d3fdbf75752dc6eff40c0bb2e08",
     "wire/delivery.json": "sha256:b1821db5d76c4b69b24d3af6459747c1de346babb6619c044684c4cc8e34c06f",
-    "wire/manifest_check.json": "sha256:442fbcff58b298198565fb2187c7f06f58cc0b0fbc978ea6410c4f20d162f701"
+    "wire/manifest_check.json": "sha256:dbb19d552902e71c315a01d353419d737060f0f36fc05ac9c3a88e521f4314fa"
   },
-  "optional": [
-    "wire/client_status.json",
-    "wire/manifest_check.json",
-    "schema/manifest.schema.json"
-  ]
+  "optional": []
 }

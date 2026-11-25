@@ -157,8 +157,11 @@ public class StandardFlagsClient(
     private var generation = 0L
     private var loaded = false
     private var etag: String? = null
+
+    // An If-None-Match the server kept refusing; never sent again, and kept in the stored record.
+    private var refusedEtag: String? = null
     private var failures = 0
-    private var networkFailures = 0
+    private var etagFailures = 0
     private var retryAt: TimeMark? = null
     private var stopped = false
     private var inFlight: InFlight? = null
@@ -227,7 +230,8 @@ public class StandardFlagsClient(
             if (result is PayloadResult.Accepted) {
                 active.value = result.payload
                 latest.value = result.payload
-                etag = result.payload.etag
+                refusedEtag = stored.refusedEtag
+                etag = result.payload.etag?.takeIf { it != refusedEtag }
             }
         }
     }
@@ -288,7 +292,7 @@ public class StandardFlagsClient(
             } catch (error: Exception) {
                 FetchResult.Failed(null, null, error)
             }
-            val outcome = handle(ticket.generation, result)
+            val outcome = handle(ticket.generation, result, sentEtag = ticket.etag != null)
             ticket.outcome.complete(outcome)
             return outcome
         } catch (error: Throwable) {
@@ -322,8 +326,9 @@ public class StandardFlagsClient(
             active.value = null
             latest.value = null
             etag = null
+            refusedEtag = null
             failures = 0
-            networkFailures = 0
+            etagFailures = 0
             retryAt = null
             fetchedLanded = false
             fetchStatus.value = FetchStatus.Idle
@@ -354,14 +359,15 @@ public class StandardFlagsClient(
         }
     }
 
-    private suspend fun handle(generation: Long, result: FetchResult): RefreshOutcome {
+    private suspend fun handle(generation: Long, result: FetchResult, sentEtag: Boolean): RefreshOutcome {
         if (result is FetchResult.Fresh) {
             return when (val parsed = FlagPayload.parse(result.body, limits)) {
                 is PayloadResult.Accepted -> accept(generation, parsed.payload, result.etag?.takeIf(::isEntityTag))
                 is PayloadResult.Rejected -> settle(generation) { fail(FetchStatus.Rejected(parsed.reason), null, null, null) }
             }
         }
-        return settle(generation) {
+        var refused: String? = null
+        val outcome = settle(generation) {
             when (result) {
                 FetchResult.TooLarge -> fail(FetchStatus.Rejected(RejectReason.TooLarge), null, null, null)
                 FetchResult.NotModified -> {
@@ -374,9 +380,29 @@ public class StandardFlagsClient(
                     stopped = true
                     fetchStatus.value = FetchStatus.Stopped(result.status)
                 }
-                is FetchResult.Failed -> fail(null, result.status, result.retryAfter, result.cause)
+                is FetchResult.Failed -> {
+                    refused = fail(null, result.status, result.retryAfter, result.cause, sentEtag)
+                }
                 is FetchResult.Fresh -> error("handled above")
             }
+        }
+        refused?.let { rememberRefusedEtag(generation, it) }
+        return outcome
+    }
+
+    /**
+     * Marks the stored record so a restart doesn't send [refused] again. Only
+     * the record the client still holds is marked: one a newer payload has
+     * replaced in the meantime is left alone.
+     */
+    private suspend fun rememberRefusedEtag(generation: Long, refused: String) = withContext(NonCancellable) {
+        storeMutex.withLock {
+            val body = mutex.withLock {
+                if (generation != this@StandardFlagsClient.generation || refusedEtag != refused) null else latest.value?.body
+            } ?: return@withLock
+            val stored = storeCall(StoreOperation.Load) { store.load() }.getOrNull() ?: return@withLock
+            if (stored.body != body || stored.refusedEtag == refused) return@withLock
+            storeCall(StoreOperation.Save) { store.save(stored.copy(refusedEtag = refused)) }
         }
     }
 
@@ -411,7 +437,7 @@ public class StandardFlagsClient(
                 live = wires.filterTo(mutableSetOf()) { merged.entries[it] != current?.entries?.get(it) }
                 if (live.isNotEmpty()) active.value = merged
             }
-            record = StoredPayload(payload.body, contextKey, clientFingerprint)
+            record = StoredPayload(payload.body, contextKey, clientFingerprint, refusedEtag = refusedEtag)
             fetchStatus.value = FetchStatus.Updated(applied, live, saved = false)
         }
         // The save and what follows it run to the end even if the caller is cancelled, and never throw.
@@ -429,7 +455,7 @@ public class StandardFlagsClient(
                 if (!fetched && fetchedLanded) return@withLock RefreshOutcome.Discarded
                 if (saved) {
                     latest.value = payload
-                    etag = responseEtag ?: payload.etag
+                    etag = (responseEtag ?: payload.etag)?.takeIf { it != refusedEtag }
                 }
                 val status = FetchStatus.Updated(applied, live, saved)
                 fetchStatus.value = status
@@ -449,25 +475,48 @@ public class StandardFlagsClient(
 
     private fun succeed() {
         failures = 0
-        networkFailures = 0
+        etagFailures = 0
         retryAt = null
     }
 
-    private fun fail(rejected: FetchStatus.Rejected?, status: Int?, retryAfter: Duration?, cause: Throwable?) {
+    /** Records a failure; returns the ETag it stopped sending, if it did. */
+    private fun fail(
+        rejected: FetchStatus.Rejected?,
+        status: Int?,
+        retryAfter: Duration?,
+        cause: Throwable?,
+        sentEtag: Boolean = false,
+    ): String? {
         failures++
-        if (rejected == null && status == null) {
-            // Repeated client-side failures (a header the HTTP stack refuses, say): stop sending the ETag.
-            if (++networkFailures >= CLIENT_FAILURES_BEFORE_ETAG_RESET) etag = null
+        var dropped: String? = null
+        val current = etag
+        if (rejected == null && sentEtag && current != null && refusesHeaders(status, cause)) {
+            // The If-None-Match may be what fails every request: a proxy or the server refuses it
+            // (400, 414, 431), or the HTTP stack refuses the header. Stop sending it after a few
+            // such failures in a row; offline spells, timeouts and other statuses don't count.
+            if (++etagFailures >= ETAG_FAILURES_BEFORE_RESET) {
+                etag = null
+                refusedEtag = current
+                etagFailures = 0
+                dropped = current
+            }
+        } else {
+            etagFailures = 0
         }
         val wait = backoff.delay(failures, retryAfter)
         retryAt = timeSource.markNow() + wait
         fetchStatus.value = rejected ?: FetchStatus.Failed(status, wait, cause)
+        return dropped
     }
 
     public companion object {
-        private const val CLIENT_FAILURES_BEFORE_ETAG_RESET = 3
+        private const val ETAG_FAILURES_BEFORE_RESET = 3
         private const val CLEAR_ATTEMPTS = 3
-        private val ENTITY_TAG = Regex("(W/)?\"[\\x21\\x23-\\x7e]{0,256}\"")
+        private val ENTITY_TAG = Regex("(W/)?\"[\\x21\\x23-\\x7e]{1,256}\"")
+
+        /** A failure an If-None-Match could cause: 400, 414 or 431, or a header the HTTP stack refuses (an IllegalArgumentException). */
+        private fun refusesHeaders(status: Int?, cause: Throwable?): Boolean =
+            if (status == null) cause is IllegalArgumentException else status == 400 || status == 414 || status == 431
 
         /** The form [StandardFlagsClient] and the OpenFeature provider both key contexts by: trimmed, blank as none. */
         public fun normalizeContextKey(key: String?): String? = key?.trim()?.takeIf { it.isNotEmpty() }

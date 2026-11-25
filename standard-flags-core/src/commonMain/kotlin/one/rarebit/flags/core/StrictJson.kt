@@ -156,12 +156,18 @@ internal object StrictJson {
             return false
         }
 
-        /** Four hex digits at [i] as a code unit, advancing past them; null when they aren't. */
+        /** Four ASCII hex digits at [i] as a code unit, advancing past them; null when they aren't. */
         private fun hex4(): Int? {
             if (i + 4 > s.length) return null
             var value = 0
             for (k in 0 until 4) {
-                val digit = s[i + k].digitToIntOrNull(16) ?: return null
+                // Only ASCII: digitToIntOrNull also takes fullwidth and other Unicode digits.
+                val digit = when (val c = s[i + k]) {
+                    in '0'..'9' -> c - '0'
+                    in 'a'..'f' -> c - 'a' + 10
+                    in 'A'..'F' -> c - 'A' + 10
+                    else -> return null
+                }
                 value = value * 16 + digit
             }
             i += 4

@@ -413,9 +413,9 @@ class StandardFlagsClientTest {
             fresh("""{"flags":[],"metadata":{"version":"bad\r\nversion"}}"""),
             FetchResult.NotModified,
             fresh(body("good", on("chat"))),
-            FetchResult.Failed(null, null, IllegalStateException("header refused")),
-            FetchResult.Failed(null, null, IllegalStateException("header refused")),
-            FetchResult.Failed(null, null, IllegalStateException("header refused")),
+            FetchResult.Failed(null, null, IllegalArgumentException("header refused")),
+            FetchResult.Failed(null, null, IllegalArgumentException("header refused")),
+            FetchResult.Failed(null, null, IllegalArgumentException("header refused")),
             FetchResult.NotModified,
         )
         val flags = StandardFlagsClient(script, definitions, backoff = Backoff(initial = 1.seconds, max = 1.seconds), timeSource = time)
@@ -428,6 +428,76 @@ class StandardFlagsClientTest {
             flags.refresh()
         }
         assertEquals(listOf<String?>(null, null, null, "\"good\"", "\"good\"", "\"good\"", null), script.sent)
+    }
+
+    @Test
+    fun onlyRepeatedHeaderRefusalsDropTheEtag() = runTest {
+        val time = TestTimeSource()
+        val offline = RuntimeException("offline")
+        val script = Script(
+            fresh(body("good", on("chat"))),
+            // Not header refusals: an offline spell, a 404, a 426 and a 429 never drop it.
+            FetchResult.Failed(null, null, offline),
+            FetchResult.Failed(null, null, offline),
+            FetchResult.Failed(null, null, offline),
+            FetchResult.Failed(404, null, null),
+            FetchResult.Failed(426, null, null),
+            FetchResult.Failed(429, null, null),
+            // Two refusals, then something else: not in a row.
+            FetchResult.Failed(431, null, null),
+            FetchResult.Failed(414, null, null),
+            FetchResult.Failed(503, null, null),
+            // Three in a row drop it.
+            FetchResult.Failed(400, null, null),
+            FetchResult.Failed(431, null, null),
+            FetchResult.Failed(414, null, null),
+            FetchResult.NotModified,
+        )
+        val flags = StandardFlagsClient(script, definitions, backoff = Backoff(initial = 1.seconds, max = 1.seconds), timeSource = time)
+        flags.refresh()
+        repeat(13) {
+            time += 1.hours
+            flags.refresh()
+        }
+        assertEquals(listOf<String?>(null) + List(12) { "\"good\"" } + listOf(null), script.sent)
+        assertEquals(FlagState.On, flags.state(chat), "the values stay")
+    }
+
+    @Test
+    fun aRefusedEtagStaysDroppedAfterARestartUntilTheVersionChanges() = runTest {
+        val time = TestTimeSource()
+        val store = InMemoryLastGoodStore()
+        val refusal = FetchResult.Failed(400, null, null)
+        val first = Script(fresh(body("good", on("chat"))), refusal, refusal, refusal)
+        val flags = StandardFlagsClient(first, definitions, store, backoff = Backoff(initial = 1.seconds, max = 1.seconds), timeSource = time, contextKey = "acct")
+        flags.refresh()
+        repeat(3) {
+            time += 1.hours
+            flags.refresh()
+        }
+        assertEquals("\"good\"", store.load()?.refusedEtag, "the drop is kept with the stored record")
+
+        // A restart: the stored payload applies, but its refused version isn't sent.
+        val second = Script(fresh(body("good", on("chat"))), fresh(body("next", off("chat"))), FetchResult.NotModified)
+        val restarted = StandardFlagsClient(second, definitions, store, backoff = Backoff(initial = 1.seconds, max = 1.seconds), timeSource = time, contextKey = "acct")
+        restarted.load()
+        assertEquals(FlagState.On, restarted.state(chat))
+        restarted.refresh()
+        assertEquals("\"good\"", store.load()?.refusedEtag, "the same version again is still refused")
+        restarted.refresh()
+        restarted.refresh()
+        assertEquals(listOf<String?>(null, null, "\"next\""), second.sent, "a new version is sent")
+    }
+
+    @Test
+    fun anOversizedStoredVersionIsNeverSent() = runTest {
+        val store = InMemoryLastGoodStore(stored(body("v".repeat(257), on("chat"))))
+        val script = Script(FetchResult.NotModified)
+        val flags = StandardFlagsClient(script, definitions, store, contextKey = "acct")
+        flags.load()
+        assertEquals(FlagState.On, flags.state(chat), "the stored payload still applies")
+        flags.refresh()
+        assertEquals(listOf<String?>(null), script.sent)
     }
 
     @Test

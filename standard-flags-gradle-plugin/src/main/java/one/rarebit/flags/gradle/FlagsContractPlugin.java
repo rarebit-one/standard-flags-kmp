@@ -11,6 +11,8 @@ import org.gradle.language.base.plugins.LifecycleBasePlugin;
  */
 public class FlagsContractPlugin implements Plugin<Project> {
     public static final String TASK_NAME = "checkFlagsManifest";
+    /** A Gradle property that sets the check's date ({@code YYYY-MM-DD}, UTC) instead of today, to reproduce a check. */
+    public static final String TODAY_PROPERTY = "standardFlags.today";
 
     @Override
     public void apply(Project project) {
@@ -27,7 +29,9 @@ public class FlagsContractPlugin implements Plugin<Project> {
             t.getWiresFile().set(extension.getWiresFile());
             t.getFailOnDeprecated().set(extension.getFailOnDeprecated());
             t.getBaselineManifest().set(extension.getBaselineManifest());
-            t.getToday().set(java.time.LocalDate.now(java.time.ZoneOffset.UTC).toString());
+            // Computed when the task runs, never at configuration time, so the configuration cache can't freeze it.
+            t.getToday().set(project.getProviders().of(UtcToday.class, spec ->
+                spec.getParameters().getOverride().set(project.getProviders().gradleProperty(TODAY_PROPERTY))));
             t.getReport().set(project.getLayout().getBuildDirectory().file("reports/standard-flags/contract.txt"));
         });
 

@@ -54,7 +54,11 @@ public abstract class CheckFlagsManifest extends DefaultTask {
     @PathSensitive(PathSensitivity.NONE)
     public abstract RegularFileProperty getBaselineManifest();
 
-    /** Today's date (UTC), which decides whether a deprecated wire is still owed. */
+    /**
+     * Today's date (UTC), which decides whether a deprecated wire is still
+     * served. The plugin supplies it from {@link UtcToday}, computed when the
+     * task runs.
+     */
     @Input
     public abstract Property<String> getToday();
 
@@ -64,6 +68,7 @@ public abstract class CheckFlagsManifest extends DefaultTask {
 
     @TaskAction
     public void check() throws IOException {
+        java.time.LocalDate today = today();
         File manifestFile = getManifest().get().getAsFile();
         ManifestContract contract;
         try {
@@ -110,11 +115,11 @@ public abstract class CheckFlagsManifest extends DefaultTask {
         StringBuilder baselineReport = new StringBuilder();
         if (getBaselineManifest().isPresent()) {
             File baseline = getBaselineManifest().get().getAsFile();
-            ManifestCheck.Result check = ManifestCheck.compare(read(baseline), read(manifestFile), java.time.LocalDate.parse(getToday().get()));
+            ManifestCheck.Result check = ManifestCheck.compare(read(baseline), read(manifestFile), today);
             switch (check.status) {
                 case INVALID:
                     File bad = "committed".equals(check.invalid) ? baseline : manifestFile;
-                    throw new GradleException("standardFlags: " + bad + " is not a valid version 2 manifest: " + check.reason);
+                    throw new GradleException("standardFlags: " + bad + " is not a manifest the server can read: " + check.reason);
                 case BREAKING:
                     StringBuilder message = new StringBuilder("standardFlags: ").append(manifestFile.getName())
                         .append(" breaks builds made against ").append(baseline.getName()).append(':');
@@ -125,9 +130,13 @@ public abstract class CheckFlagsManifest extends DefaultTask {
                 default:
                     baselineReport.append("baseline: ").append(check.status.name().toLowerCase(java.util.Locale.ROOT)).append('\n');
             }
+            for (String warning : check.warnings) {
+                getLogger().warn("standardFlags: baseline: " + warning);
+                baselineReport.append("warning: baseline: ").append(warning).append('\n');
+            }
         }
 
-        ManifestContract.Result result = contract.check(getAudience().get(), reads, values);
+        ManifestContract.Result result = contract.check(getAudience().get(), reads, values, today);
         boolean failDeprecated = getFailOnDeprecated().get();
         StringBuilder report = new StringBuilder();
         for (String warning : result.warnings) {
@@ -148,6 +157,16 @@ public abstract class CheckFlagsManifest extends DefaultTask {
         File out = getReport().get().getAsFile();
         Files.createDirectories(out.getParentFile().toPath());
         Files.write(out.toPath(), report.toString().getBytes(StandardCharsets.UTF_8));
+    }
+
+    private java.time.LocalDate today() {
+        String value = getToday().get();
+        try {
+            if (value.matches("[0-9]{4}-[0-9]{2}-[0-9]{2}")) return java.time.LocalDate.parse(value);
+        } catch (java.time.format.DateTimeParseException e) {
+            // reported below
+        }
+        throw new GradleException("standardFlags: the check's date " + value + " is not a YYYY-MM-DD calendar date (" + FlagsContractPlugin.TODAY_PROPERTY + ")");
     }
 
     private static ManifestContract.Type type(Object value, String wire) {
