@@ -431,6 +431,45 @@ class StandardFlagsClientTest {
     }
 
     @Test
+    fun aServerRefusingTheEtagDropsIt431AtOnceOther4xxAfterThreeInARow() = runTest {
+        val time = TestTimeSource()
+        val script = Script(
+            fresh(body("good", on("chat"))),
+            FetchResult.Failed(431, null, null),
+            FetchResult.NotModified,
+            fresh(body("next", on("chat"))),
+            FetchResult.Failed(429, null, null),
+            FetchResult.Failed(400, null, null),
+            FetchResult.Failed(400, null, null),
+            FetchResult.Failed(400, null, null),
+            FetchResult.NotModified,
+        )
+        val flags = StandardFlagsClient(script, definitions, backoff = Backoff(initial = 1.seconds, max = 1.seconds), timeSource = time)
+        flags.refresh()
+        repeat(8) {
+            time += 1.hours
+            flags.refresh()
+        }
+        assertEquals(
+            listOf<String?>(null, "\"good\"", null, null, "\"next\"", "\"next\"", "\"next\"", "\"next\"", null),
+            script.sent,
+            "a 431 drops the ETag at once; a 429 doesn't count; three 400s in a row drop it",
+        )
+        assertEquals(FlagState.On, flags.state(chat), "the values stay")
+    }
+
+    @Test
+    fun anOversizedStoredVersionIsNeverSent() = runTest {
+        val store = InMemoryLastGoodStore(stored(body("v".repeat(257), on("chat"))))
+        val script = Script(FetchResult.NotModified)
+        val flags = StandardFlagsClient(script, definitions, store, contextKey = "acct")
+        flags.load()
+        assertEquals(FlagState.On, flags.state(chat), "the stored payload still applies")
+        flags.refresh()
+        assertEquals(listOf<String?>(null), script.sent)
+    }
+
+    @Test
     fun unauthorizedStopsUntilTheContextChanges() = runTest {
         val store = InMemoryLastGoodStore()
         val script = Script(

@@ -71,4 +71,27 @@ class FlagsContractPluginFunctionalTest {
         BuildResult unreadable = runner("checkFlagsManifest").buildAndFail();
         assertTrue(unreadable.getOutput().contains("standardFlags: can't read"), unreadable.getOutput());
     }
+
+    @Test
+    void theDateIsTakenWhenTheTaskRunsEvenFromTheConfigurationCache() throws IOException {
+        write("settings.gradle.kts", "rootProject.name = \"app\"\n");
+        write("flags.manifest.json", ManifestContractTest.V2);
+        write("baseline.manifest.json", ManifestContractTest.V2);
+        write("build.gradle.kts", "plugins {\n    base\n    id(\"one.rarebit.flags.contract\")\n}\n"
+            + "standardFlags {\n    manifest.set(file(\"flags.manifest.json\"))\n    baselineManifest.set(file(\"baseline.manifest.json\"))\n"
+            + "    audience.set(\"mobile\")\n    wire(\"bannerOn\", \"boolean\")\n}\n");
+
+        BuildResult owed = runner("checkFlagsManifest", "--configuration-cache", "-PstandardFlags.today=2027-01-31").build();
+        assertEquals(TaskOutcome.SUCCESS, owed.task(":checkFlagsManifest").getOutcome());
+        assertTrue(owed.getOutput().contains("served a static value until 2027-01-31") || owed.getOutput().contains("serves a static value until 2027-01-31"),
+            owed.getOutput());
+
+        // The same configuration cache entry, a later day: the deprecated wire's window is over.
+        BuildResult over = runner("checkFlagsManifest", "--configuration-cache", "-PstandardFlags.today=2027-02-01").buildAndFail();
+        assertTrue(over.getOutput().contains("Reusing configuration cache"), over.getOutput());
+        assertTrue(over.getOutput().contains("wire \"bannerOn\" is no longer served"), over.getOutput());
+
+        BuildResult bad = runner("checkFlagsManifest", "--configuration-cache", "-PstandardFlags.today=2027-02-30").buildAndFail();
+        assertTrue(bad.getOutput().contains("is not a YYYY-MM-DD calendar date"), bad.getOutput());
+    }
 }

@@ -75,18 +75,21 @@ public data class PayloadLimits(
     val maxBytes: Int = 256 * 1024,
     /** The most entries `flags` may hold. */
     val maxFlags: Int = 2048,
-    /** The most nested containers (objects and arrays, the top level counting as 1). */
+    /** The most nested containers (objects and arrays, the top level counting as 1), at most [MAX_NESTING_CAP]. */
     val maxNesting: Int = DEFAULT_MAX_NESTING,
 ) {
     init {
         require(maxBytes > 0) { "maxBytes must be positive" }
         require(maxFlags >= 0) { "maxFlags must not be negative" }
-        require(maxNesting >= 1) { "maxNesting must be at least 1" }
+        require(maxNesting in 1..MAX_NESTING_CAP) { "maxNesting must be between 1 and $MAX_NESTING_CAP" }
     }
 
     public companion object {
         /** The server's own JSON parser's `max_nesting`. */
         public const val DEFAULT_MAX_NESTING: Int = 100
+
+        /** The largest [maxNesting] accepted: the scanner allocates a stack of that depth on every parse. */
+        public const val MAX_NESTING_CAP: Int = 1000
     }
 }
 
@@ -153,13 +156,17 @@ public class FlagPayload internal constructor(
 
         /**
          * Whether a `metadata.version` is kept to send back as an entity tag:
-         * non-empty, every character printable ASCII other than a space or `"`
-         * (U+0021, U+0023 to U+007E), as conformance/README.md pins. The server
-         * sends 64 hex digits. Anything else is ignored, so no If-None-Match is
-         * sent rather than a header the HTTP stack refuses on every request.
+         * 1 to 256 characters, every one printable ASCII other than a space or
+         * `"` (U+0021, U+0023 to U+007E), as conformance/README.md pins. The
+         * server sends 64 hex digits. Anything else is ignored, so no
+         * If-None-Match is sent rather than a header the HTTP stack, a proxy or
+         * the server refuses on every request. A stored payload is parsed again
+         * when loaded, so the same rule applies to its version.
          */
         public fun isUsableVersion(version: String): Boolean =
-            version.isNotEmpty() && version.all { it.code == 0x21 || it.code in 0x23..0x7e }
+            version.length in 1..MAX_VERSION_LENGTH && version.all { it.code == 0x21 || it.code in 0x23..0x7e }
+
+        private const val MAX_VERSION_LENGTH = 256
 
         /** Validates [text]; its UTF-8 size is measured against [PayloadLimits.maxBytes]. */
         public fun parse(text: String, limits: PayloadLimits = PayloadLimits()): PayloadResult =

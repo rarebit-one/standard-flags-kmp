@@ -158,7 +158,7 @@ public class StandardFlagsClient(
     private var loaded = false
     private var etag: String? = null
     private var failures = 0
-    private var networkFailures = 0
+    private var etagFailures = 0
     private var retryAt: TimeMark? = null
     private var stopped = false
     private var inFlight: InFlight? = null
@@ -288,7 +288,7 @@ public class StandardFlagsClient(
             } catch (error: Exception) {
                 FetchResult.Failed(null, null, error)
             }
-            val outcome = handle(ticket.generation, result)
+            val outcome = handle(ticket.generation, result, sentEtag = ticket.etag != null)
             ticket.outcome.complete(outcome)
             return outcome
         } catch (error: Throwable) {
@@ -323,7 +323,7 @@ public class StandardFlagsClient(
             latest.value = null
             etag = null
             failures = 0
-            networkFailures = 0
+            etagFailures = 0
             retryAt = null
             fetchedLanded = false
             fetchStatus.value = FetchStatus.Idle
@@ -354,7 +354,7 @@ public class StandardFlagsClient(
         }
     }
 
-    private suspend fun handle(generation: Long, result: FetchResult): RefreshOutcome {
+    private suspend fun handle(generation: Long, result: FetchResult, sentEtag: Boolean): RefreshOutcome {
         if (result is FetchResult.Fresh) {
             return when (val parsed = FlagPayload.parse(result.body, limits)) {
                 is PayloadResult.Accepted -> accept(generation, parsed.payload, result.etag?.takeIf(::isEntityTag))
@@ -374,7 +374,7 @@ public class StandardFlagsClient(
                     stopped = true
                     fetchStatus.value = FetchStatus.Stopped(result.status)
                 }
-                is FetchResult.Failed -> fail(null, result.status, result.retryAfter, result.cause)
+                is FetchResult.Failed -> fail(null, result.status, result.retryAfter, result.cause, sentEtag)
                 is FetchResult.Fresh -> error("handled above")
             }
         }
@@ -449,15 +449,23 @@ public class StandardFlagsClient(
 
     private fun succeed() {
         failures = 0
-        networkFailures = 0
+        etagFailures = 0
         retryAt = null
     }
 
-    private fun fail(rejected: FetchStatus.Rejected?, status: Int?, retryAfter: Duration?, cause: Throwable?) {
+    private fun fail(
+        rejected: FetchStatus.Rejected?,
+        status: Int?,
+        retryAfter: Duration?,
+        cause: Throwable?,
+        sentEtag: Boolean = false,
+    ) {
         failures++
-        if (rejected == null && status == null) {
-            // Repeated client-side failures (a header the HTTP stack refuses, say): stop sending the ETag.
-            if (++networkFailures >= CLIENT_FAILURES_BEFORE_ETAG_RESET) etag = null
+        if (rejected == null && sentEtag && (status == null || mayRefuseHeaders(status))) {
+            // The If-None-Match may be what fails every request: the HTTP stack refuses the header
+            // (no status), or a proxy or the server refuses the request (400, 431). Stop sending it:
+            // at once on a 431, after a few failures in a row otherwise.
+            if (status == 431 || ++etagFailures >= ETAG_FAILURES_BEFORE_RESET) etag = null
         }
         val wait = backoff.delay(failures, retryAfter)
         retryAt = timeSource.markNow() + wait
@@ -465,9 +473,12 @@ public class StandardFlagsClient(
     }
 
     public companion object {
-        private const val CLIENT_FAILURES_BEFORE_ETAG_RESET = 3
+        private const val ETAG_FAILURES_BEFORE_RESET = 3
         private const val CLEAR_ATTEMPTS = 3
-        private val ENTITY_TAG = Regex("(W/)?\"[\\x21\\x23-\\x7e]{0,256}\"")
+        private val ENTITY_TAG = Regex("(W/)?\"[\\x21\\x23-\\x7e]{1,256}\"")
+
+        /** A 4xx a request header could cause; not a timeout (408) or a rate limit (429). */
+        private fun mayRefuseHeaders(status: Int): Boolean = status in 400..499 && status != 408 && status != 429
 
         /** The form [StandardFlagsClient] and the OpenFeature provider both key contexts by: trimmed, blank as none. */
         public fun normalizeContextKey(key: String?): String? = key?.trim()?.takeIf { it.isNotEmpty() }

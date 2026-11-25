@@ -42,7 +42,8 @@ public abstract class FlagsContractExtension {
      * Optional: the manifest the app's shipped builds were made against. When
      * set, the check also fails when the current manifest breaks them (a wire
      * removed or retyped, a public audience made private), with the server's
-     * {@code standard_flags:manifest:check} semantics. Both must be version 2.
+     * {@code standard_flags:manifest:check} semantics. Either may be version 1
+     * or 2; anything the server's reader refuses fails the check.
      */
     public abstract RegularFileProperty getBaselineManifest();
 

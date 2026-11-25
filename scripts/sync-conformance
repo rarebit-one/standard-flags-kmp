@@ -29,17 +29,16 @@ REPOSITORY = "rarebit-one/standard_flags"
 REQUIRED = [
     "README.md",
     "schema/fixture.schema.json",
+    "schema/manifest.schema.json",
     "versions/version_ranges.json",
     "wire/client_state.json",
-    "wire/delivery.json",
-]
-# Wire fixtures that later gem phases add. Vendored as soon as the pinned
-# commit has them; the runners pick them up when present.
-OPTIONAL = [
     "wire/client_status.json",
+    "wire/delivery.json",
     "wire/manifest_check.json",
-    "schema/manifest.schema.json",
 ]
+# Wire fixtures that later gem phases add, vendored as soon as the pinned
+# commit has them. A fixture moves to REQUIRED once a runner depends on it.
+OPTIONAL = []
 
 
 def fetch(url):

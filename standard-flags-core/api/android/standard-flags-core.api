@@ -211,6 +211,7 @@ public abstract interface class one/rarebit/flags/core/LastGoodStore {
 public final class one/rarebit/flags/core/PayloadLimits {
 	public static final field Companion Lone/rarebit/flags/core/PayloadLimits$Companion;
 	public static final field DEFAULT_MAX_NESTING I
+	public static final field MAX_NESTING_CAP I
 	public fun <init> ()V
 	public fun <init> (III)V
 	public synthetic fun <init> (IIIILkotlin/jvm/internal/DefaultConstructorMarker;)V

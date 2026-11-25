@@ -328,6 +328,8 @@ final class one.rarebit.flags.core/PayloadLimits { // one.rarebit.flags.core/Pay
     final object Companion { // one.rarebit.flags.core/PayloadLimits.Companion|null[0]
         final const val DEFAULT_MAX_NESTING // one.rarebit.flags.core/PayloadLimits.Companion.DEFAULT_MAX_NESTING|{}DEFAULT_MAX_NESTING[0]
             final fun <get-DEFAULT_MAX_NESTING>(): kotlin/Int // one.rarebit.flags.core/PayloadLimits.Companion.DEFAULT_MAX_NESTING.<get-DEFAULT_MAX_NESTING>|<get-DEFAULT_MAX_NESTING>(){}[0]
+        final const val MAX_NESTING_CAP // one.rarebit.flags.core/PayloadLimits.Companion.MAX_NESTING_CAP|{}MAX_NESTING_CAP[0]
+            final fun <get-MAX_NESTING_CAP>(): kotlin/Int // one.rarebit.flags.core/PayloadLimits.Companion.MAX_NESTING_CAP.<get-MAX_NESTING_CAP>|<get-MAX_NESTING_CAP>(){}[0]
     }
 }
 

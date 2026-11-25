@@ -2,6 +2,7 @@ package one.rarebit.flags.core
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
@@ -72,16 +73,29 @@ class StrictJsonTest {
     }
 
     @Test
+    fun hexEscapesTakeOnlyAsciiDigits() {
+        assertTrue(StrictJson.isValid("[\"\\u00e9\\u00C9\"]"))
+        // A fullwidth 8 (U+FF18), an Arabic-Indic 4 (U+0664) and a fullwidth A (U+FF21) are digits to digitToIntOrNull.
+        for (bad in listOf("[\"\\u00\uFF181\"]", "[\"\\u00\u06641\"]", "[\"\\u00\uFF21A\"]", "[\"\\uD\uFF183D\\uDE00\"]")) {
+            assertTrue(!StrictJson.isValid(bad), bad)
+        }
+    }
+
+    @Test
     fun theNestingLimitIsConfigurable() {
         val three = "{\"flags\":[[]]}"
         assertTrue(StrictJson.isValid(three, maxNesting = 3))
         assertTrue(!StrictJson.isValid(three, maxNesting = 2))
         assertEquals(PayloadResult.Rejected(RejectReason.NotJson), FlagPayload.parse(three, PayloadLimits(maxNesting = 2)))
+        assertEquals(PayloadLimits.MAX_NESTING_CAP, PayloadLimits(maxNesting = PayloadLimits.MAX_NESTING_CAP).maxNesting)
+        for (absurd in listOf(0, PayloadLimits.MAX_NESTING_CAP + 1, Int.MAX_VALUE)) {
+            assertFailsWith<IllegalArgumentException>("maxNesting $absurd") { PayloadLimits(maxNesting = absurd) }
+        }
     }
 
     @Test
     fun aVersionThatCantBeAnEntityTagIsIgnored() {
-        for (version in listOf("bad\r\nversion", "has \"quote\"", "spaced out", "é", "tab\tbed")) {
+        for (version in listOf("bad\r\nversion", "has \"quote\"", "spaced out", "é", "tab\tbed", "", "x".repeat(257))) {
             val body = """{"flags":[],"metadata":{"version":${kotlinx.serialization.json.JsonPrimitive(version)}}}"""
             val payload = assertIs<PayloadResult.Accepted>(FlagPayload.parse(body)).payload
             assertEquals(null, payload.version, version)
@@ -89,6 +103,7 @@ class StrictJsonTest {
         }
         assertTrue(FlagPayload.isUsableVersion("0123abcdef".repeat(6) + "0123"))
         assertTrue(FlagPayload.isUsableVersion("v1"))
-        assertTrue(FlagPayload.isUsableVersion("x".repeat(1000)), "the shared rule has no length cap")
+        assertTrue(FlagPayload.isUsableVersion("x".repeat(256)), "at most 256 characters")
+        assertTrue(!FlagPayload.isUsableVersion("x".repeat(257)))
     }
 }
