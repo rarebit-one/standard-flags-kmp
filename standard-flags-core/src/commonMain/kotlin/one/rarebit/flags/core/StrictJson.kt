@@ -7,20 +7,20 @@ package one.rarebit.flags.core
  * scanner can: it accepts exactly the JSON grammar (one value, surrounded by
  * optional whitespace), with no extensions.
  *
- * It also refuses raw control characters inside strings and nesting deeper
- * than [MAX_DEPTH] containers, as the server's own JSON parser does (its
- * `max_nesting` is 100), so its recursion is bounded too.
+ * It also refuses raw control characters inside strings, a `\uXXXX`
+ * surrogate escape that isn't a high one directly followed by a low one, and
+ * more than `maxNesting` nested containers (the top level counting as 1), as
+ * conformance/README.md pins. Its recursion is bounded by `maxNesting`.
  */
 internal object StrictJson {
-    const val MAX_DEPTH: Int = 100
+    fun isValid(text: String, maxNesting: Int = PayloadLimits.DEFAULT_MAX_NESTING): Boolean =
+        Scanner(text, maxNesting).document()
 
-    fun isValid(text: String): Boolean = Scanner(text).document()
-
-    private class Scanner(private val s: String) {
+    private class Scanner(private val s: String, private val maxNesting: Int) {
         private var i = 0
 
         // Containers open at each depth: '{' or '['.
-        private val stack = CharArray(MAX_DEPTH)
+        private val stack = CharArray(maxNesting)
         private var depth = 0
 
         fun document(): Boolean {
@@ -68,7 +68,7 @@ internal object StrictJson {
             if (i >= s.length) return false
             return when (val c = s[i]) {
                 '{', '[' -> {
-                    if (depth == MAX_DEPTH) return false
+                    if (depth == maxNesting) return false
                     i++
                     skipWhitespace()
                     val close = if (c == '{') '}' else ']'
@@ -135,9 +135,17 @@ internal object StrictJson {
                         when (s[i++]) {
                             '"', '\\', '/', 'b', 'f', 'n', 'r', 't' -> {}
                             'u' -> {
-                                if (i + 4 > s.length) return false
-                                for (k in 0 until 4) if (!s[i + k].isHex()) return false
-                                i += 4
+                                val unit = hex4() ?: return false
+                                when (unit) {
+                                    // A high surrogate must be followed directly by an escaped low one.
+                                    in 0xD800..0xDBFF -> {
+                                        if (!s.startsWith("\\u", i)) return false
+                                        i += 2
+                                        val low = hex4() ?: return false
+                                        if (low !in 0xDC00..0xDFFF) return false
+                                    }
+                                    in 0xDC00..0xDFFF -> return false
+                                }
                             }
                             else -> return false
                         }
@@ -148,7 +156,17 @@ internal object StrictJson {
             return false
         }
 
-        private fun Char.isHex(): Boolean = this in '0'..'9' || this in 'a'..'f' || this in 'A'..'F'
+        /** Four hex digits at [i] as a code unit, advancing past them; null when they aren't. */
+        private fun hex4(): Int? {
+            if (i + 4 > s.length) return null
+            var value = 0
+            for (k in 0 until 4) {
+                val digit = s[i + k].digitToIntOrNull(16) ?: return null
+                value = value * 16 + digit
+            }
+            i += 4
+            return value
+        }
 
         private fun skipWhitespace() {
             while (i < s.length && (s[i] == ' ' || s[i] == '\t' || s[i] == '\n' || s[i] == '\r')) i++

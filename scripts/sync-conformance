@@ -38,6 +38,7 @@ REQUIRED = [
 OPTIONAL = [
     "wire/client_status.json",
     "wire/manifest_check.json",
+    "schema/manifest.schema.json",
 ]
 
 

@@ -49,6 +49,15 @@ public abstract class CheckFlagsManifest extends DefaultTask {
     @Input
     public abstract Property<Boolean> getFailOnDeprecated();
 
+    @InputFile
+    @Optional
+    @PathSensitive(PathSensitivity.NONE)
+    public abstract RegularFileProperty getBaselineManifest();
+
+    /** Today's date (UTC), which decides whether a deprecated wire is still owed. */
+    @Input
+    public abstract Property<String> getToday();
+
     /** A report of the last check, so the task is up to date until an input changes. */
     @OutputFile
     public abstract RegularFileProperty getReport();
@@ -98,6 +107,26 @@ public abstract class CheckFlagsManifest extends DefaultTask {
         }
         if (reads.isEmpty()) throw new GradleException("standardFlags: no wires declared; add wire(...) or wiresFile");
 
+        StringBuilder baselineReport = new StringBuilder();
+        if (getBaselineManifest().isPresent()) {
+            File baseline = getBaselineManifest().get().getAsFile();
+            ManifestCheck.Result check = ManifestCheck.compare(read(baseline), read(manifestFile), java.time.LocalDate.parse(getToday().get()));
+            switch (check.status) {
+                case INVALID:
+                    File bad = "committed".equals(check.invalid) ? baseline : manifestFile;
+                    throw new GradleException("standardFlags: " + bad + " is not a valid version 2 manifest: " + check.reason);
+                case BREAKING:
+                    StringBuilder message = new StringBuilder("standardFlags: ").append(manifestFile.getName())
+                        .append(" breaks builds made against ").append(baseline.getName()).append(':');
+                    for (ManifestCheck.Wire wire : check.removedWires) message.append("\n  - removed wire ").append(wire);
+                    for (ManifestCheck.Wire wire : check.typeChanges) message.append("\n  - type changed: ").append(wire);
+                    for (String audience : check.audiencesMadePrivate) message.append("\n  - audience made private: ").append(audience);
+                    throw new GradleException(message.toString());
+                default:
+                    baselineReport.append("baseline: ").append(check.status.name().toLowerCase(java.util.Locale.ROOT)).append('\n');
+            }
+        }
+
         ManifestContract.Result result = contract.check(getAudience().get(), reads, values);
         boolean failDeprecated = getFailOnDeprecated().get();
         StringBuilder report = new StringBuilder();
@@ -113,6 +142,7 @@ public abstract class CheckFlagsManifest extends DefaultTask {
             if (failDeprecated) for (String warning : result.warnings) message.append("\n  - ").append(warning);
             throw new GradleException(message.toString());
         }
+        report.append(baselineReport);
         report.append("ok: ").append(reads.size()).append(" wires checked against manifest version ")
             .append(contract.version()).append('\n');
         File out = getReport().get().getAsFile();

@@ -29,6 +29,9 @@ versions passed outside SemVer).
 | `versions/legacy_ranges.json` | `legacy_ranges` | server | RubyGems range stored by 0.2.x → neutral translation; version → matched (as Gem::Requirement) |
 | `wire/delivery.json` | `delivery` | wire | registry, context, client → OFREP entries and ETag |
 | `wire/client_state.json` | `client_state` | wire | OFREP payloads → what client code reads |
+| `wire/client_status.json` | `client_status` | wire | recognised platforms, client registry, X-Client-* header values, today → `/client/status` payload |
+| `upgrade/client_status_server.json` | `client_status` | server | the same, plus ENV pins and store lookups |
+| `wire/manifest_check.json` | `manifest_check` | wire | committed manifest, current manifest, today → invalid, or ok / stale / breaking with removed wires, type changes, audiences made private |
 
 ## delivery.json: what the server sends
 
@@ -106,6 +109,16 @@ last good one and that payload's version, when any of these hold:
 - it is larger than `max_bytes` (a payload of exactly `max_bytes` is
   accepted), or is not JSON (a byte-order mark or trailing bytes make it not
   JSON);
+- it is not strict RFC 8259 JSON. Lenient parsers must be configured
+  strictly: no unquoted literals (`tru`, `True`, `NaN`, `Infinity`), single
+  quotes, unquoted keys, malformed numbers (`01`, `1.`, `-`), trailing
+  commas, raw control characters (U+0000 to U+001F) inside strings,
+  escapes other than `\" \\ \/ \b \f \n \r \t \uXXXX`, or a `\uXXXX`
+  surrogate that isn't a high one (D800–DBFF) followed directly by a
+  `\uXXXX` low one (DC00–DFFF). A lone or reversed surrogate is rejected,
+  even by parsers that would otherwise accept it;
+- it nests more than `max_nesting` containers. Every object and array
+  counts, the top level being 1, so exactly `max_nesting` is accepted;
 - the top level is not an object;
 - `flags` is not an array, or has more than `max_flags` entries;
 - an entry is not an object, or has no non-empty string `key`;
@@ -117,7 +130,10 @@ send an object with a repeated member name, so how a client reads one is not
 pinned.
 
 **Accepting a payload.** The client remembers `metadata.version` when it is
-a non-empty string, else null, and sends it as If-None-Match next time. A
+a non-empty string whose every character is printable ASCII other than a
+space or a double quote (U+0021, U+0023 to U+007E: what an ETag may hold),
+else null, and sends it quoted as If-None-Match next time. A version with
+CR or LF, a space, `"` or a non-ASCII character is not kept. A
 304 changes nothing, even before any payload. Keys the client doesn't
 declare are ignored.
 
@@ -145,6 +161,106 @@ The read is then:
 
 When a fresh value applies, at launch or live, is the app's policy. It is not
 part of this suite.
+
+## client_status.json: upgrade status
+
+A server takes the file's `client_platforms` as the platforms it
+recognises, declares the file's `clients` (its client registry), takes the
+case's `client` as the X-Client-Platform, X-Client-Version and
+X-Client-Build header values, and answers `GET /client/status` for the
+case's `group` (absent: the default group) on `today` (the case's, else the
+file's), comparing the body with `expected`. A client library uses each
+`expected` body as a golden payload for its upgrade-state parsing.
+
+The rules:
+
+- **The body.** Always the seven keys `status`, `platform`, `version`,
+  `min_version`, `recommended`, `enforce_at` and `store_url`, with null for
+  anything absent. Versions are canonical SemVer (`0.4` is sent as
+  `0.4.0`; build metadata is dropped). `enforce_at` is a UTC date.
+- **`unknown`.** No platform, a platform outside `client_platforms`
+  (`platform` is then null), or no usable version (`version` null). An
+  unknown build is never told to upgrade; the body still carries the
+  platform's versions and store URL when the platform is known.
+- **The minimum.** A client below `min_version` gets `upgrade_recommended`
+  until `enforce_at` (the client's `since` plus `grace_days`) and
+  `upgrade_required` from that day on. `enforce_at` is set whenever the
+  version is below the minimum. Versions compare by SemVer precedence, with
+  one exception: a prerelease of exactly the minimum (or recommended)
+  release meets it (`0.4.0-rc.1` meets `0.4.0`), while a prerelease of an
+  older release (`0.3.10-beta.1`) is below it.
+- **Recommended.** At or above the minimum but below `recommended` is
+  `upgrade_recommended` with no `enforce_at`. Anything else is `ok`.
+- **Store ceiling.** `min_version` and `recommended` are never above the
+  newest version known to be in the store (`available`): the body carries
+  the capped values, and the comparison uses them.
+- **Nothing declared.** A recognised platform with no client in the group
+  is `ok`, with null versions.
+- **A status a client doesn't know** (a future one) must be treated as
+  `unknown`: never block on it.
+
+`upgrade/client_status_server.json` (`"scope": "server"`) has the same shape
+and adds what only a server has: `env_vars` (the
+`STANDARD_FLAGS_CLIENT_<NAME>_*` break-glass pins, which beat the code and
+any store lookup; a raised `_MIN_VERSION` needs `_SINCE`, and a pin is a raise unless every version meeting the code's minimum also meets it) and
+`store_lookup` (client name => the version that client's lookup last
+answered; null means no answer, so `available` applies; a lookup caps only
+its own client). Clients skip it.
+## manifest_check.json: when a manifest change breaks clients
+
+The server's `standard_flags:manifest:check` and a client library's contract
+check (the Kotlin library's Gradle task) run these cases, so they agree on
+what breaks a shipped build. Each case has a `committed` manifest (the
+baseline a client was built against), a `current` one and a `today` date
+(the case's, else the file's), all in UTC. A case expecting `"status":
+"invalid"` names the manifest (`committed` or `current`) a reader must
+refuse, and expects nothing else. The manifests are version 2 and
+validate against [`schema/manifest.schema.json`](schema/manifest.schema.json).
+The one case committing a version 1 manifest is `"scope": "server"`.
+
+A wire is an (audience, wire name) pair. A manifest tells an audience a wire
+in one of two ways:
+
+- a flag lists the wire under its `audiences` for that audience. Its type is
+  the flag's `type`;
+- a tombstone lists it under `serve` for that audience. Its type is
+  `boolean` for true or false and `string` for a string. It is still served
+  while `today <= until`.
+
+The rules:
+
+- **Invalid manifests.** Besides what `schema/manifest.schema.json` rejects,
+  a reader refuses a `version` that isn't the integer 2, a date that isn't a
+  calendar date (`2027-02-30`), a tombstone `serve` without `until`, and a
+  wire listed twice for one audience (by two flags, twice in one list, or by
+  a flag and a tombstone).
+- **`stale`** is true when the two manifests differ as JSON values,
+  compared structurally: object member order is ignored, array order (wires,
+  values, flags, tombstones) is significant. The server task compares the
+  committed file's text with what it would write instead, ignoring CRLF
+  line endings and trailing newlines, which the fixture can't express.
+- **`removed_wires`** lists every wire the committed manifest tells an
+  audience (a static wire only while it is still served on `today`) that the
+  current manifest neither exposes to that audience from a flag nor serves
+  from a tombstone still serving on `today`. A deprecated wire whose `until`
+  has passed may be removed. Moving a wire to another flag of the same type
+  is not a removal. Moving it to another audience is.
+- **`type_changes`** lists every wire both manifests tell the same audience
+  whose type differs, with `from` and `to`. This includes a committed static
+  wire whose `until` has passed: a wire name that comes back with another
+  type is still a change.
+- **`audiences_made_private`** lists every audience the committed manifest
+  marks `public: true`, with at least one wire still served on `today`,
+  that the current manifest marks `public: false`. Clients before sign-in
+  lose all of its wires. An audience that disappears altogether shows up as
+  removed wires instead.
+- Lists are sorted by audience, then wire name. **`status`** is `breaking`
+  when any list is non-empty, else `stale` when `stale` is true, else `ok`.
+
+Flag keys, kinds, defaults, values, `min_client` and lifecycle dates only
+make a manifest stale. Moving a deprecated wire's `until` earlier is a
+warning in the server task, not a break; warnings aren't pinned here. Removed mode values and variants are not checked:
+clients read unknown values as not usable (see `client_state.json`).
 
 ## versions/version_ranges.json
 

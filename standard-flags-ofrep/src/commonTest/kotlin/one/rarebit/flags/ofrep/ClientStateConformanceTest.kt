@@ -46,7 +46,11 @@ class ClientStateConformanceTest {
     fun clientStateRunsThroughStandardFlagsClient() = runTest {
         val document = Json.parseToJsonElement(ConformanceFixtures.files.getValue("wire/client_state.json")).jsonObject
         val limits = document.getValue("limits").jsonObject.let {
-            PayloadLimits(it.getValue("max_bytes").jsonPrimitive.int, it.getValue("max_flags").jsonPrimitive.int)
+            PayloadLimits(
+                it.getValue("max_bytes").jsonPrimitive.int,
+                it.getValue("max_flags").jsonPrimitive.int,
+                it["max_nesting"]?.jsonPrimitive?.int ?: PayloadLimits.DEFAULT_MAX_NESTING,
+            )
         }
         val failures = mutableListOf<String>()
         for (case in document.getValue("cases").jsonArray.map { it.jsonObject }) {

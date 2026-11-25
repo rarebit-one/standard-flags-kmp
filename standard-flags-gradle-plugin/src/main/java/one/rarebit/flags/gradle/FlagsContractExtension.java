@@ -38,6 +38,14 @@ public abstract class FlagsContractExtension {
      */
     public abstract RegularFileProperty getWiresFile();
 
+    /**
+     * Optional: the manifest the app's shipped builds were made against. When
+     * set, the check also fails when the current manifest breaks them (a wire
+     * removed or retyped, a public audience made private), with the server's
+     * {@code standard_flags:manifest:check} semantics. Both must be version 2.
+     */
+    public abstract RegularFileProperty getBaselineManifest();
+
     /** Whether a deprecated wire fails the check instead of warning. Default false. */
     public abstract Property<Boolean> getFailOnDeprecated();
 

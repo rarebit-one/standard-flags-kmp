@@ -26,6 +26,8 @@ public class FlagsContractPlugin implements Plugin<Project> {
             t.getValues().set(extension.getValues());
             t.getWiresFile().set(extension.getWiresFile());
             t.getFailOnDeprecated().set(extension.getFailOnDeprecated());
+            t.getBaselineManifest().set(extension.getBaselineManifest());
+            t.getToday().set(java.time.LocalDate.now(java.time.ZoneOffset.UTC).toString());
             t.getReport().set(project.getLayout().getBuildDirectory().file("reports/standard-flags/contract.txt"));
         });
 
