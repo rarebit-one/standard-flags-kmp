@@ -218,7 +218,7 @@ The plugin's supported surface is the plugin id `one.rarebit.flags.contract`, th
 Releases follow semantic versioning, and each Kotlin module's public API is checked against its `api/` dump.
 
 - **Configuration classes** (`PayloadLimits`, `ApplyPolicy`, `ClientInfo`) are regular classes, not data classes: construct them and read their properties, and compare them with `==`.
-- **Result and value types may gain fields in a minor release.** `FlagEntry`, `FlagRead`, `StatusDetails`, `StoredPayload`, and the cases of `FetchStatus`, `FetchResult`, `PayloadResult` and `ClientStatus` mirror what the server sends or what the client reports, and grow with them. Read their properties by name; don't destructure them (`val (key, value) = entry`) or rely on `copy` or their constructor's parameter order. When building one for a test or a preview, use named arguments.
+- **Result and value types may gain fields in a minor release.** `FlagEntry`, `FlagRead`, `StatusDetails`, `StoredPayload`, and the cases of `FetchStatus`, `FetchResult`, `RefreshOutcome`, `PayloadResult` and `ClientStatus` mirror what the server sends or what the client reports, and grow with them. Read their properties by name; don't destructure them (`val (key, value) = entry`) or rely on `copy` or their constructor's parameter order. When building one for a test or a preview, use named arguments.
 
 ## Development
 
