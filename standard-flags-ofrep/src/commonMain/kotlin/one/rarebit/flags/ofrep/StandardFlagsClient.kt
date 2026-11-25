@@ -31,6 +31,12 @@ import kotlin.time.TimeSource
 /**
  * When fresh values reach code.
  *
+ * A regular class, not a data class, so a setting can be added later without
+ * changing `copy` or `componentN`. When adding one, keep the previous
+ * constructor as a secondary constructor (for example
+ * `@Deprecated(level = DeprecationLevel.HIDDEN)`), so binaries built against
+ * an earlier version still link.
+ *
  * @property freshValuesAtNextLaunch fresh values are saved and apply at the
  *   next launch, so a screen never changes under the user. Kill switches
  *   (reason `KILL_SWITCH`, or a [BooleanFlag.killSwitch]) always apply live.
@@ -38,9 +44,6 @@ import kotlin.time.TimeSource
  * @property firstPayloadAppliesLive when nothing was loaded at launch (a
  *   first run, a new build, or right after the context changed), the first
  *   payload applies at once instead of waiting a launch.
- *
- * A regular class, not a data class, so a setting can be added later without
- * breaking binary compatibility (no `copy` or `componentN` to change).
  */
 public class ApplyPolicy(
     public val freshValuesAtNextLaunch: Boolean = true,

@@ -31,6 +31,10 @@ public sealed interface FlagValue {
  * conformance suite pins (an object with a non-empty string `key`) and tolerant
  * about everything else: unknown fields are ignored, and a field of the wrong
  * type reads as absent.
+ *
+ * A result type: later versions may add fields (OFREP entries can also carry
+ * `metadata`), so read its properties by name. Don't destructure it or rely on
+ * its `copy` or constructor signature.
  */
 public data class FlagEntry(
     /** The wire name. */
@@ -73,7 +77,10 @@ public data class FlagEntry(
  * Limits a payload must meet before it replaces the last good one.
  *
  * A regular class, not a data class, so a limit can be added later without
- * breaking binary compatibility (no `copy` or `componentN` to change).
+ * changing `copy` or `componentN`. When adding one, keep the previous
+ * constructor as a secondary constructor (for example
+ * `@Deprecated(level = DeprecationLevel.HIDDEN)`), so binaries built against
+ * an earlier version still link.
  */
 public class PayloadLimits(
     /** The most bytes a payload may have. A payload of exactly this size is accepted. */

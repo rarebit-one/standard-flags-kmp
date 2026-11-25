@@ -200,14 +200,25 @@ Optionally, point `baselineManifest` at the manifest your shipped builds were ma
 
 `./gradlew check` then runs `checkFlagsManifest`. It fails when a wire isn't exposed to the audience (naming any audience that does see it), when its type differs, or when the server can send a string value the app doesn't declare (the app would read its code default). It warns when the app declares a value the server never sends, and when a wire is only served by a deprecated tombstone, with its end date (`failOnDeprecated = true` makes that an error too). Once that date has passed the server no longer sends the wire, so reading it fails. Dates are UTC and computed when the task runs, even from the configuration cache; `-PstandardFlags.today=YYYY-MM-DD` reproduces a check on another day. It reads manifest versions 1 and 2.
 
-**The check depends on the date.** Reading a wire whose tombstone `until` date has passed is an error, so a build that passed yesterday can fail today with nothing in the repository changed. When it does:
+**The check depends on the date.** A build that passed yesterday can fail today with nothing in the repository changed, in two ways:
 
-- Stop reading the wire: remove it from the app's declarations (and the code that reads it). The server no longer sends it, so the app already gets its code default.
-- To rebuild an old commit as it built at the time (a release branch, a reproducible build), pass the date it was built on: `./gradlew check -PstandardFlags.today=2026-01-15`. Don't use this to keep shipping a wire past its end date.
+- **The app reads a wire whose tombstone `until` date has passed.** Stop reading it: remove it from the app's declarations (and the code that reads it). The server no longer sends it, so the app already gets its code default.
+- **With `baselineManifest`, the server moved a tombstone's `until` earlier than the baseline promised.** Until the new date this is only a warning ("earlier than … shipped clients were promised"); the day after, the check fails with the wire as removed, whether or not this app still reads it, because the baseline covers every wire your shipped builds were told about. Removing the wire from the app doesn't help. If the earlier date is intended (the builds that read the wire are no longer supported), move `baselineManifest` to the current manifest; otherwise have the server restore the date it promised.
+
+To rebuild an old commit as it built at the time (a release branch, a reproducible build), pass the date it was built on: `./gradlew check -PstandardFlags.today=2026-01-15`. Don't use this to keep shipping a wire past its end date.
+
+The plugin's supported surface is the plugin id `one.rarebit.flags.contract`, the `standardFlags { }` block, the `checkFlagsManifest` task and the `standardFlags.today` property; its Java classes are internal and may change in any release.
 
 ## Conformance
 
 `conformance/` vendors the gem's wire-scope fixtures at the commit pinned in `conformance/PIN.json`. The tests run them on the JVM, Android and the iOS simulator: version and build ranges, payload in → reads out (through `FlagCache` and again through `StandardFlagsClient`), every golden delivery body and its ETag, every `wire/client_status.json` status body, and every `wire/manifest_check.json` case through the Gradle plugin's `ManifestCheck`. A test fails if a vendored fixture has no runner. `scripts/sync-conformance --ref main` moves the pin; CI runs `scripts/sync-conformance --check`, which also refuses any file in `conformance/` the pin doesn't list.
+
+## Compatibility
+
+Releases follow semantic versioning, and each Kotlin module's public API is checked against its `api/` dump.
+
+- **Configuration classes** (`PayloadLimits`, `ApplyPolicy`, `ClientInfo`) are regular classes, not data classes: construct them and read their properties, and compare them with `==`.
+- **Result and value types may gain fields in a minor release.** `FlagEntry`, `FlagRead`, `StatusDetails`, `StoredPayload`, and the cases of `FetchStatus`, `FetchResult`, `PayloadResult` and `ClientStatus` mirror what the server sends or what the client reports, and grow with them. Read their properties by name; don't destructure them (`val (key, value) = entry`) or rely on `copy` or their constructor's parameter order. When building one for a test or a preview, use named arguments.
 
 ## Development
 

@@ -16,12 +16,15 @@ import one.rarebit.flags.core.Version
  * unknown. So a version like `1.4.0 (381)` ships without complaint and quietly
  * loses every `min_client` flag. Check [isRecognised] in a debug build or a test.
  *
+ * A regular class, not a data class, so a field can be added later without
+ * changing `copy` or `componentN`. When adding one, keep the previous
+ * constructor as a secondary constructor (for example
+ * `@Deprecated(level = DeprecationLevel.HIDDEN)`), so binaries built against
+ * an earlier version still link.
+ *
  * @property platform `android`, `ios`, `web` or `desktop` (the server's default allowlist).
  * @property version the app's SemVer version, such as `0.5.0`.
  * @property build the build number, a non-negative integer.
- *
- * A regular class, not a data class, so a field can be added later without
- * breaking binary compatibility (no `copy` or `componentN` to change).
  */
 public class ClientInfo(
     public val platform: String,

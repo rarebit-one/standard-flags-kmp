@@ -35,6 +35,10 @@ public class FlagCache(public val limits: PayloadLimits = PayloadLimits()) {
 /**
  * A payload as the [LastGoodStore] keeps it.
  *
+ * Construct it with named arguments and read its properties by name:
+ * destructuring (`val (body, key) = stored`) isn't supported, because fields
+ * may be added in later versions.
+ *
  * @property body the response body, re-validated when it is loaded.
  * @property contextKey the context it was fetched for (a user or install key);
  *   a stored payload for another context is never applied.
@@ -47,10 +51,6 @@ public class FlagCache(public val limits: PayloadLimits = PayloadLimits()) {
  * @property refusedEtag an If-None-Match value the server kept refusing
  *   (400, 414 or 431), so it isn't sent again after a restart. A payload with
  *   another version sends its own.
- *
- * Construct it with named arguments and read its properties by name:
- * destructuring (`val (body, key) = stored`) isn't supported, because fields
- * may be added in later versions.
  */
 @Serializable
 public data class StoredPayload(

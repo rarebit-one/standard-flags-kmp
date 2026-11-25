@@ -41,6 +41,11 @@ public sealed interface ClientStatus {
  * The fields of a `/client/status` answer, each null when absent or of the
  * wrong type.
  *
+ * A result type: later versions may add fields as the server's answer grows, so
+ * read its properties by name. Don't destructure it or rely on its `copy` or
+ * constructor signature; to build one for a preview or a test, use named
+ * arguments.
+ *
  * @property enforceAt the UTC date (`YYYY-MM-DD`) enforcement starts, also
  *   present once it has; null when absent or not a date.
  * @property storeUrl where to send the user to upgrade.

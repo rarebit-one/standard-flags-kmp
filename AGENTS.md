@@ -9,6 +9,7 @@ This is a public repository: keep code, docs, commits and PRs generic.
 - Commits are signed. Changes go through pull requests; `main` is protected.
 - Run `./gradlew check` before pushing. On macOS it also runs the iOS simulator tests; `./gradlew iosSimulatorTests` runs only those.
 - `check` also compares each Kotlin module's public API with its `api/` dump. After an intended API change, run `./gradlew updateKotlinAbi` on macOS (so the iOS klib dump is complete) and commit the dumps.
+- A removed `<init>` (or any removed line) in the dump diff is a binary break for apps built against an earlier release. When adding a constructor parameter to a public class, keep the old constructor as a secondary one (`@Deprecated(level = DeprecationLevel.HIDDEN)`) so those callers still link.
 
 ## Layout
 
