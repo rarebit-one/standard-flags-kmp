@@ -13,6 +13,15 @@ This is a public repository: keep code, docs, commits and PRs generic.
 
 Gradle modules share `gradle/libs.versions.toml` and the coordinates in `gradle.properties` (`GROUP=one.rarebit.flags`).
 
+- `standard-flags-core`: wire model, validation, reads, SemVer ranges, last-good store, ETag. No HTTP.
+- `standard-flags-ofrep`: the Ktor OFREP client and `StandardFlagsClient` (the cache and apply policy).
+- `standard-flags-openfeature`: the OpenFeature provider. Keep it optional: nothing else depends on it.
+- `standard-flags-status`: `/client/status` and 426 detection.
+- `standard-flags-gradle-plugin`: the contract check, in Java so it adds no Kotlin stdlib to app builds.
+- `conformance/`: the gem's wire fixtures, vendored at the commit in `PIN.json`. Never edit them by hand: run `scripts/sync-conformance` (`--ref <ref>` moves the pin). The core module embeds them at build time and runs them on every target.
+
+The wire contract lives in the gem (`conformance/README.md` there and here). When it changes, bump the pin, then make the runner pass.
+
 ## Releasing
 
 Publishing goes through CI, never from a laptop. Pushing a `v*` tag runs `.github/workflows/release.yml`, which calls the shared `reusable-maven-central-release.yml` in `rarebit-one/.github`. The tag must match `VERSION_NAME` in `gradle.properties`, and `CHANGELOG.md` must have a `## [x.y.z]` entry. Check the artifacts locally with `./gradlew publishToMavenLocal`.

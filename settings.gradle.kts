@@ -16,3 +16,9 @@ dependencyResolutionManagement {
         google()
     }
 }
+
+include(":standard-flags-core")
+include(":standard-flags-ofrep")
+include(":standard-flags-openfeature")
+include(":standard-flags-status")
+include(":standard-flags-gradle-plugin")

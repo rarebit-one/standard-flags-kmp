@@ -1,0 +1,112 @@
+package one.rarebit.flags.core
+
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerializationException
+import kotlinx.serialization.json.Json
+
+/**
+ * The last good payload, keeping it across rejected payloads and 304s: what
+ * `wire/client_state.json` pins. Not thread-safe; the OFREP client confines it.
+ */
+public class FlagCache(public val limits: PayloadLimits = PayloadLimits()) {
+    /** The last accepted payload, or null before any. */
+    public var payload: FlagPayload? = null
+        private set
+
+    /** The version to send as If-None-Match, from the last accepted payload. */
+    public val version: String? get() = payload?.version
+
+    /** Validates [bytes]; an accepted payload replaces the last good one. */
+    public fun receive(bytes: ByteArray): PayloadResult =
+        FlagPayload.parse(bytes, limits).also { if (it is PayloadResult.Accepted) payload = it.payload }
+
+    /** Replaces the last good payload with one validated elsewhere. */
+    public fun accept(payload: FlagPayload) {
+        this.payload = payload
+    }
+
+    /** A 304 Not Modified: nothing changes, even before any payload. */
+    public fun notModified() {}
+
+    /** Reads [definition] from the last good payload. */
+    public fun <T : Any> read(definition: FlagDefinition<T>): FlagRead<T> = readFlag(payload, definition)
+}
+
+/**
+ * A payload as the [LastGoodStore] keeps it.
+ *
+ * @property body the response body, re-validated when it is loaded.
+ * @property contextKey the context it was fetched for (a user or install key);
+ *   a stored payload for another context is never applied.
+ */
+@Serializable
+public data class StoredPayload(
+    val body: String,
+    val contextKey: String? = null,
+)
+
+/**
+ * Where the last good payload survives a cold start. Back it with the app's
+ * own key-value store (DataStore, NSUserDefaults, a file); [StringLastGoodStore]
+ * adapts any string store. Implementations must not throw for a missing value.
+ */
+public interface LastGoodStore {
+    public suspend fun load(): StoredPayload?
+
+    public suspend fun save(payload: StoredPayload)
+
+    public suspend fun clear()
+}
+
+/** A [LastGoodStore] that lives as long as the process. For tests and previews. */
+public class InMemoryLastGoodStore(private var stored: StoredPayload? = null) : LastGoodStore {
+    override suspend fun load(): StoredPayload? = stored
+
+    override suspend fun save(payload: StoredPayload) {
+        stored = payload
+    }
+
+    override suspend fun clear() {
+        stored = null
+    }
+}
+
+/**
+ * A [LastGoodStore] over a single string value in the app's key-value store.
+ * A value that doesn't decode (another format, a truncated write) reads as
+ * nothing stored.
+ *
+ * ```
+ * StringLastGoodStore(
+ *     read = { settings.getStringOrNull("flags.last_good") },
+ *     write = { value -> if (value == null) settings.remove("flags.last_good") else settings.putString("flags.last_good", value) },
+ * )
+ * ```
+ */
+public class StringLastGoodStore(
+    private val read: suspend () -> String?,
+    private val write: suspend (String?) -> Unit,
+) : LastGoodStore {
+    override suspend fun load(): StoredPayload? {
+        val text = read() ?: return null
+        return try {
+            json.decodeFromString(StoredPayload.serializer(), text)
+        } catch (_: SerializationException) {
+            null
+        } catch (_: IllegalArgumentException) {
+            null
+        }
+    }
+
+    override suspend fun save(payload: StoredPayload) {
+        write(json.encodeToString(StoredPayload.serializer(), payload))
+    }
+
+    override suspend fun clear() {
+        write(null)
+    }
+
+    private companion object {
+        val json = Json { ignoreUnknownKeys = true }
+    }
+}

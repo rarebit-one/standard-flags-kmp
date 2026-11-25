@@ -1,0 +1,150 @@
+#!/usr/bin/env python3
+"""Vendor the standard_flags wire conformance fixtures at a pinned commit.
+
+    scripts/sync-conformance               # re-fetch the files at the pinned commit
+    scripts/sync-conformance --ref main    # move the pin to a ref (a branch, tag or SHA)
+    scripts/sync-conformance --check       # CI: fail unless conformance/ is exactly the pinned commit's files
+
+conformance/PIN.json records the repository, the commit and a SHA-256 for every
+vendored file. The check fails when a vendored file differs from the pin, when
+the pin differs from the files upstream at that commit, or when an optional
+fixture (one a later gem phase adds) exists at the pinned commit but isn't
+vendored. Only the wire-scope files are vendored: clients never evaluate rules.
+"""
+
+import argparse
+import hashlib
+import json
+import os
+import sys
+import urllib.error
+import urllib.request
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DIR = os.path.join(ROOT, "conformance")
+PIN = os.path.join(DIR, "PIN.json")
+REPOSITORY = "rarebit-one/standard_flags"
+
+# Paths under conformance/ in the gem.
+REQUIRED = [
+    "README.md",
+    "schema/fixture.schema.json",
+    "versions/version_ranges.json",
+    "wire/client_state.json",
+    "wire/delivery.json",
+]
+# Wire fixtures that later gem phases add. Vendored as soon as the pinned
+# commit has them; the runners pick them up when present.
+OPTIONAL = [
+    "wire/client_status.json",
+    "wire/manifest_check.json",
+]
+
+
+def fetch(url):
+    request = urllib.request.Request(url, headers={"User-Agent": "standard-flags-kmp sync-conformance"})
+    token = os.environ.get("GITHUB_TOKEN")
+    if token and url.startswith("https://api.github.com/"):
+        request.add_header("Authorization", f"Bearer {token}")
+    try:
+        with urllib.request.urlopen(request, timeout=30) as response:
+            return response.read()
+    except urllib.error.HTTPError as error:
+        if error.code == 404:
+            return None
+        raise
+
+
+def resolve(ref):
+    body = fetch(f"https://api.github.com/repos/{REPOSITORY}/commits/{ref}")
+    if body is None:
+        sys.exit(f"sync-conformance: {REPOSITORY} has no ref {ref!r}")
+    return json.loads(body)["sha"]
+
+
+def upstream(commit, path):
+    return fetch(f"https://raw.githubusercontent.com/{REPOSITORY}/{commit}/conformance/{path}")
+
+
+def digest(data):
+    return "sha256:" + hashlib.sha256(data).hexdigest()
+
+
+def read_pin():
+    with open(PIN, encoding="utf-8") as handle:
+        return json.load(handle)
+
+
+def sync(commit):
+    files = {}
+    for path in REQUIRED + OPTIONAL:
+        data = upstream(commit, path)
+        if data is None:
+            if path in REQUIRED:
+                sys.exit(f"sync-conformance: conformance/{path} is missing at {commit}")
+            continue
+        target = os.path.join(DIR, path)
+        os.makedirs(os.path.dirname(target), exist_ok=True)
+        with open(target, "wb") as handle:
+            handle.write(data)
+        files[path] = digest(data)
+    pin = {
+        "repository": REPOSITORY,
+        "commit": commit,
+        "files": dict(sorted(files.items())),
+        "optional": OPTIONAL,
+    }
+    with open(PIN, "w", encoding="utf-8") as handle:
+        json.dump(pin, handle, indent=2)
+        handle.write("\n")
+    print(f"conformance/ now matches {REPOSITORY}@{commit} ({len(files)} files)")
+
+
+def check(offline):
+    pin = read_pin()
+    commit = pin["commit"]
+    problems = []
+    for path, expected in pin["files"].items():
+        local = os.path.join(DIR, path)
+        if not os.path.exists(local):
+            problems.append(f"conformance/{path} is pinned but missing")
+            continue
+        with open(local, "rb") as handle:
+            if digest(handle.read()) != expected:
+                problems.append(f"conformance/{path} differs from PIN.json; run scripts/sync-conformance")
+    for path in REQUIRED:
+        if path not in pin["files"]:
+            problems.append(f"PIN.json lacks required file {path}")
+    if not offline:
+        for path in REQUIRED + OPTIONAL:
+            data = upstream(commit, path)
+            pinned = pin["files"].get(path)
+            if data is None:
+                if pinned:
+                    problems.append(f"PIN.json lists {path}, which doesn't exist at {commit}")
+            elif pinned is None:
+                problems.append(f"{path} exists at the pinned commit {commit} but isn't vendored; run scripts/sync-conformance")
+            elif digest(data) != pinned:
+                problems.append(f"conformance/{path} is not the file at {commit}; run scripts/sync-conformance")
+    if problems:
+        print("\n".join(problems), file=sys.stderr)
+        sys.exit(1)
+    print(f"conformance/ matches {pin['repository']}@{commit}")
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("--ref", help="move the pin to this ref of the gem")
+    parser.add_argument("--check", action="store_true", help="verify conformance/ against the pin")
+    parser.add_argument("--offline", action="store_true", help="with --check, compare local files with PIN.json only")
+    args = parser.parse_args()
+    if args.check:
+        check(args.offline)
+    elif args.ref:
+        sync(resolve(args.ref))
+    else:
+        sync(read_pin()["commit"])
+
+
+if __name__ == "__main__":
+    main()
