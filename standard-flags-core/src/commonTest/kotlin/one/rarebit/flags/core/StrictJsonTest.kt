@@ -64,8 +64,24 @@ class StrictJsonTest {
     }
 
     @Test
+    fun surrogateEscapesMustPairHighThenLow() {
+        assertTrue(StrictJson.isValid("[\"\\ud83d\\ude00\"]"), "a high surrogate followed by a low one")
+        for (bad in listOf("[\"\\ud83d\"]", "[\"\\ude00\"]", "[\"\\ude00\\ud83d\"]", "[\"\\ud83dx\"]", "[\"\\ud83d\\u0041\"]")) {
+            assertTrue(!StrictJson.isValid(bad), bad)
+        }
+    }
+
+    @Test
+    fun theNestingLimitIsConfigurable() {
+        val three = "{\"flags\":[[]]}"
+        assertTrue(StrictJson.isValid(three, maxNesting = 3))
+        assertTrue(!StrictJson.isValid(three, maxNesting = 2))
+        assertEquals(PayloadResult.Rejected(RejectReason.NotJson), FlagPayload.parse(three, PayloadLimits(maxNesting = 2)))
+    }
+
+    @Test
     fun aVersionThatCantBeAnEntityTagIsIgnored() {
-        for (version in listOf("bad\r\nversion", "has \"quote\"", "spaced out", "é", "x".repeat(257))) {
+        for (version in listOf("bad\r\nversion", "has \"quote\"", "spaced out", "é", "tab\tbed")) {
             val body = """{"flags":[],"metadata":{"version":${kotlinx.serialization.json.JsonPrimitive(version)}}}"""
             val payload = assertIs<PayloadResult.Accepted>(FlagPayload.parse(body)).payload
             assertEquals(null, payload.version, version)
@@ -73,5 +89,6 @@ class StrictJsonTest {
         }
         assertTrue(FlagPayload.isUsableVersion("0123abcdef".repeat(6) + "0123"))
         assertTrue(FlagPayload.isUsableVersion("v1"))
+        assertTrue(FlagPayload.isUsableVersion("x".repeat(1000)), "the shared rule has no length cap")
     }
 }

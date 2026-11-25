@@ -76,7 +76,7 @@ abstract class GenerateConformanceFixtures : DefaultTask() {
         out.append("// Generated from conformance/ by generateConformanceFixtures. Do not edit.\n")
         out.append("package one.rarebit.flags.core.conformance\n\n")
         out.append("internal object ConformanceFixtures {\n")
-        out.append("    val files: Map<String, String> by lazy {\n        mapOf(\n")
+        out.append("    val files: Map<String, String> by lazy {\n        mapOf<String, String>(\n")
         for ((path, text) in files.toSortedMap()) {
             out.append("            ").append(literal(path)).append(" to listOf(\n")
             // JVM class files cap a string constant at 65535 bytes.

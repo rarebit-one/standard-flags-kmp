@@ -86,7 +86,11 @@ class WireConformanceTest {
         val document = fixture("wire/client_state.json")
         assertEquals("client_state", document.str("suite"))
         val limits = document.getValue("limits").jsonObject.let {
-            PayloadLimits(maxBytes = it.getValue("max_bytes").jsonPrimitive.int, maxFlags = it.getValue("max_flags").jsonPrimitive.int)
+            PayloadLimits(
+                maxBytes = it.getValue("max_bytes").jsonPrimitive.int,
+                maxFlags = it.getValue("max_flags").jsonPrimitive.int,
+                maxNesting = it["max_nesting"]?.jsonPrimitive?.int ?: PayloadLimits.DEFAULT_MAX_NESTING,
+            )
         }
         val failures = mutableListOf<String>()
         val cases = document.getValue("cases").jsonArray.map { it.jsonObject }
@@ -178,12 +182,18 @@ class WireConformanceTest {
     }
 
     @Test
-    fun laterWireFixturesNeedARunner() {
-        // Gem phase 3d adds wire/manifest_check.json (the Gradle contract check).
-        // It isn't at the pinned commit; when a pin bump vendors it, this fails
-        // until ManifestContract runs it, so a new fixture can't sit unrun.
-        // (wire/client_status.json from 3c already has its runner in the status module.)
-        assertTrue("wire/manifest_check.json" !in ConformanceFixtures.files, "wire/manifest_check.json is vendored but not yet run (see ManifestContract)")
+    fun everyVendoredFixtureHasARunner() {
+        // A pin bump that vendors a new fixture fails here until a runner exists for it,
+        // so a fixture can't sit unrun.
+        val runners = mapOf(
+            "versions/version_ranges.json" to "WireConformanceTest",
+            "wire/client_state.json" to "WireConformanceTest and ClientStateConformanceTest (ofrep)",
+            "wire/delivery.json" to "WireConformanceTest",
+            "wire/client_status.json" to "ClientStatusConformanceTest (status)",
+            "wire/manifest_check.json" to "ManifestCheckConformanceTest (gradle plugin)",
+        )
+        val unrun = ConformanceFixtures.files.keys.filter { it !in runners }
+        assertTrue(unrun.isEmpty(), "vendored but not run: $unrun")
         assertNull(ConformanceFixtures.files["schema/fixture.schema.json"], "the schema isn't a fixture")
     }
 

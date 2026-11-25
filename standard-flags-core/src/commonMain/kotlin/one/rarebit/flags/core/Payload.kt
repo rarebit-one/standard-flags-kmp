@@ -75,10 +75,18 @@ public data class PayloadLimits(
     val maxBytes: Int = 256 * 1024,
     /** The most entries `flags` may hold. */
     val maxFlags: Int = 2048,
+    /** The most nested containers (objects and arrays, the top level counting as 1). */
+    val maxNesting: Int = DEFAULT_MAX_NESTING,
 ) {
     init {
         require(maxBytes > 0) { "maxBytes must be positive" }
         require(maxFlags >= 0) { "maxFlags must not be negative" }
+        require(maxNesting >= 1) { "maxNesting must be at least 1" }
+    }
+
+    public companion object {
+        /** The server's own JSON parser's `max_nesting`. */
+        public const val DEFAULT_MAX_NESTING: Int = 100
     }
 }
 
@@ -144,13 +152,14 @@ public class FlagPayload internal constructor(
         }
 
         /**
-         * Whether a `metadata.version` can be sent back as an entity tag: 1 to
-         * 256 visible ASCII characters other than `"`. The server sends 64 hex
-         * digits. Anything else is ignored, so no If-None-Match is sent rather
-         * than a header the HTTP stack refuses on every request.
+         * Whether a `metadata.version` is kept to send back as an entity tag:
+         * non-empty, every character printable ASCII other than a space or `"`
+         * (U+0021, U+0023 to U+007E), as conformance/README.md pins. The server
+         * sends 64 hex digits. Anything else is ignored, so no If-None-Match is
+         * sent rather than a header the HTTP stack refuses on every request.
          */
         public fun isUsableVersion(version: String): Boolean =
-            version.length in 1..256 && version.all { it.code == 0x21 || it.code in 0x23..0x7e }
+            version.isNotEmpty() && version.all { it.code == 0x21 || it.code in 0x23..0x7e }
 
         /** Validates [text]; its UTF-8 size is measured against [PayloadLimits.maxBytes]. */
         public fun parse(text: String, limits: PayloadLimits = PayloadLimits()): PayloadResult =
@@ -160,7 +169,7 @@ public class FlagPayload internal constructor(
             // A byte-order mark makes the body not JSON (RFC 8259 §8.1).
             if (text.startsWith('\uFEFF')) return PayloadResult.Rejected(RejectReason.NotJson)
             // kotlinx keeps unquoted tokens (tru, NaN, 'x') as literals; check the grammar first.
-            if (!StrictJson.isValid(text)) return PayloadResult.Rejected(RejectReason.NotJson)
+            if (!StrictJson.isValid(text, limits.maxNesting)) return PayloadResult.Rejected(RejectReason.NotJson)
             val document = try {
                 json.parseToJsonElement(text)
             } catch (_: SerializationException) {

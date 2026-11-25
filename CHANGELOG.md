@@ -14,4 +14,6 @@ All notable changes to this project are documented here. The format follows
 - `standard-flags-status`: `ClientStatusClient` (`/client/status` as a `StateFlow`) and the `UpgradeRequiredDetector` plugin for 426 answers.
 - `standard-flags-gradle-plugin`: `one.rarebit.flags.contract` with the `checkFlagsManifest` task (manifest versions 1 and 2, wire exposure, types and string values).
 - Kotlin ABI validation: each module's public API is recorded in `api/` and checked by `check`.
+- `PayloadLimits.maxNesting` (default 100), lone and reversed surrogate escapes rejected, and the shared version rule (no length cap), matching the strict-JSON `client_state.json` cases.
+- `ManifestCheck` and the contract plugin's optional `baselineManifest`: the shared `manifest_check.json` semantics (stale, removed wires, type changes, audiences made private, invalid manifests).
 - The standard_flags wire conformance fixtures, vendored at a pinned gem commit with `scripts/sync-conformance`, and a runner on the JVM, Android and the iOS simulator.

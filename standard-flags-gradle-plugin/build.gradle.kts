@@ -32,4 +32,8 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+    // The shared fixtures (wire/manifest_check.json) the contract check runs.
+    val conformance = rootProject.layout.projectDirectory.dir("conformance")
+    inputs.dir(conformance).withPathSensitivity(PathSensitivity.RELATIVE).withPropertyName("conformance")
+    systemProperty("standardFlags.conformance", conformance.asFile.path)
 }

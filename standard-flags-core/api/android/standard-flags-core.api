@@ -209,18 +209,25 @@ public abstract interface class one/rarebit/flags/core/LastGoodStore {
 }
 
 public final class one/rarebit/flags/core/PayloadLimits {
+	public static final field Companion Lone/rarebit/flags/core/PayloadLimits$Companion;
+	public static final field DEFAULT_MAX_NESTING I
 	public fun <init> ()V
-	public fun <init> (II)V
-	public synthetic fun <init> (IIILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (III)V
+	public synthetic fun <init> (IIIILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()I
 	public final fun component2 ()I
-	public final fun copy (II)Lone/rarebit/flags/core/PayloadLimits;
-	public static synthetic fun copy$default (Lone/rarebit/flags/core/PayloadLimits;IIILjava/lang/Object;)Lone/rarebit/flags/core/PayloadLimits;
+	public final fun component3 ()I
+	public final fun copy (III)Lone/rarebit/flags/core/PayloadLimits;
+	public static synthetic fun copy$default (Lone/rarebit/flags/core/PayloadLimits;IIIILjava/lang/Object;)Lone/rarebit/flags/core/PayloadLimits;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getMaxBytes ()I
 	public final fun getMaxFlags ()I
+	public final fun getMaxNesting ()I
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
+}
+
+public final class one/rarebit/flags/core/PayloadLimits$Companion {
 }
 
 public abstract interface class one/rarebit/flags/core/PayloadResult {

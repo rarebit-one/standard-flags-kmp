@@ -54,6 +54,19 @@ class FlagsContractPluginFunctionalTest {
         BuildResult drift = runner("checkFlagsManifest").buildAndFail();
         assertTrue(drift.getOutput().contains("can carry [savings], which the app doesn't declare"), drift.getOutput());
 
+        // A baseline: the manifest shipped builds were made against.
+        String v2 = ManifestContractTest.V2;
+        write("baseline.manifest.json", v2);
+        write("flags.manifest.json", v2);
+        write("flags.wires.json", "{\"insights_enabled\": \"boolean\"}");
+        write("build.gradle.kts", "plugins {\n    base\n    id(\"one.rarebit.flags.contract\")\n}\n"
+            + "standardFlags {\n    manifest.set(file(\"flags.manifest.json\"))\n    baselineManifest.set(file(\"baseline.manifest.json\"))\n"
+            + "    audience.set(\"mobile\")\n    wiresFile.set(file(\"flags.wires.json\"))\n}\n");
+        assertEquals(TaskOutcome.SUCCESS, runner("checkFlagsManifest").build().task(":checkFlagsManifest").getOutcome());
+        write("flags.manifest.json", v2.replace("[\"chat_enabled\", \"insights_enabled\"]", "[\"insights_enabled\"]"));
+        BuildResult breaking = runner("checkFlagsManifest").buildAndFail();
+        assertTrue(breaking.getOutput().contains("removed wire mobile.chat_enabled"), breaking.getOutput());
+
         write("flags.wires.json", "{\"homeHero\": ");
         BuildResult unreadable = runner("checkFlagsManifest").buildAndFail();
         assertTrue(unreadable.getOutput().contains("standardFlags: can't read"), unreadable.getOutput());
