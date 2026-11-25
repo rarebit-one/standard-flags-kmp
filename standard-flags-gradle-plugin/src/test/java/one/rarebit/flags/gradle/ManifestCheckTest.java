@@ -121,6 +121,40 @@ class ManifestCheckTest {
     }
 
     @Test
+    void refusesTextTheServersJsonParserRefuses() {
+        Map<String, String> refused = new LinkedHashMap<>();
+        refused.put("a repeated member name", BASE.replace("\"clients\": {}", "\"clients\": {}, \"clients\": {}"));
+        refused.put("a repeated member name spelled with an escape", BASE.replace("\"clients\": {}", "\"clients\": {}, \"\\u0063lients\": {}"));
+        refused.put("a repeated name in a nested object", BASE.replace("{\"public\": false}", "{\"public\": false, \"public\": false}"));
+        refused.put("a trailing comma in an object", BASE.replace("\"clients\": {}", "\"clients\": {},"));
+        refused.put("a trailing comma in an array", BASE.replace("[true, false]", "[true, false,]"));
+        refused.put("a comment", BASE.replace("\"clients\": {}", "\"clients\": {} /* none */"));
+        refused.put("an unquoted literal", BASE.replace("\"default\": true", "\"default\": True"));
+        refused.put("a leading zero", BASE.replace("\"version\": 2", "\"version\": 02"));
+        refused.put("trailing text", BASE + "{}");
+        refused.put("101 nested containers", BASE.replace("\"clients\": {}", "\"clients\": {}, \"x\": " + "[".repeat(100) + "]".repeat(100)));
+        for (Map.Entry<String, String> c : refused.entrySet()) {
+            ManifestCheck.Result result = ManifestCheck.compare(c.getValue(), BASE, TODAY);
+            assertEquals(ManifestCheck.Status.INVALID, result.status, c.getKey());
+            assertTrue(result.reason.startsWith("not strict JSON"), c.getKey() + ": " + result.reason);
+        }
+        String deep = BASE.replace("\"clients\": {}", "\"clients\": {}, \"x\": " + "[".repeat(99) + "]".repeat(99));
+        assertEquals(ManifestCheck.Status.STALE, ManifestCheck.compare(deep, BASE, TODAY).status, "100 nested containers are read");
+        String escapes = BASE.replace("\"hello\"", "\"h\\u00e9llo \\\" \\n \\/\"");
+        assertEquals(ManifestCheck.Status.STALE, ManifestCheck.compare(escapes, BASE, TODAY).status);
+    }
+
+    @Test
+    void aVersionOneWireListReadsAsRubysArrayDoes() {
+        String v1 = "{\"version\": 1, \"flags\": [{\"key\": \"ai\", \"type\": \"boolean\", \"wires\": {\"mobile\": WIRES}}]}";
+        assertEquals(ManifestCheck.Status.OK, ManifestCheck.compare(v1.replace("WIRES", "{}"), v1.replace("WIRES", "{}"), TODAY).status,
+            "an empty object is no wires");
+        assertEquals(ManifestCheck.Status.STALE, ManifestCheck.compare(v1.replace("WIRES", "\"chat\""), v1.replace("WIRES", "[\"chat\"]"), TODAY).status,
+            "a bare string is one wire");
+        assertEquals(ManifestCheck.Status.INVALID, ManifestCheck.compare(v1.replace("WIRES", "{\"a\": \"b\"}"), BASE, TODAY).status);
+    }
+
+    @Test
     void warnsAsTheServerDoes() {
         String earlier = BASE.replace("2027-01-31", "2027-01-20");
         assertEquals(ManifestCheck.Status.STALE, ManifestCheck.compare(BASE, earlier, TODAY).status, "an earlier until isn't a break");

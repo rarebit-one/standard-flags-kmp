@@ -196,6 +196,7 @@ public final class ManifestCheck {
      * baseline is still checked across the upgrade.
      */
     private static Parsed parse(String json) {
+        StrictJsonText.check(json);
         Object document = new JsonSlurper().parseText(json);
         if (!(document instanceof Map)) throw new IllegalArgumentException("not a JSON object");
         Map<?, ?> manifest = (Map<?, ?>) document;
@@ -448,9 +449,14 @@ public final class ManifestCheck {
         return value instanceof Integer || value instanceof Long || value instanceof java.math.BigInteger;
     }
 
-    /** Ruby's {@code Array(value)}: a list as is, null as empty, anything else as a one-item list. */
+    /**
+     * Ruby's {@code Array(value)}: a list as is, null as empty, an object as its
+     * members (as pairs, so an empty object is empty and any other isn't a list
+     * of strings), anything else as a one-item list.
+     */
     private static List<?> asList(Object value) {
         if (value instanceof List) return (List<?>) value;
+        if (value instanceof Map) return new ArrayList<>(((Map<?, ?>) value).entrySet());
         return value == null ? Collections.emptyList() : Collections.singletonList(value);
     }
 

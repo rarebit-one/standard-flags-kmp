@@ -334,7 +334,7 @@ final class one.rarebit.flags.core/PayloadLimits { // one.rarebit.flags.core/Pay
 }
 
 final class one.rarebit.flags.core/StoredPayload { // one.rarebit.flags.core/StoredPayload|null[0]
-    constructor <init>(kotlin/String, kotlin/String? = ..., kotlin/String? = ..., kotlin/Int = ...) // one.rarebit.flags.core/StoredPayload.<init>|<init>(kotlin.String;kotlin.String?;kotlin.String?;kotlin.Int){}[0]
+    constructor <init>(kotlin/String, kotlin/String? = ..., kotlin/String? = ..., kotlin/Int = ..., kotlin/String? = ...) // one.rarebit.flags.core/StoredPayload.<init>|<init>(kotlin.String;kotlin.String?;kotlin.String?;kotlin.Int;kotlin.String?){}[0]
 
     final val body // one.rarebit.flags.core/StoredPayload.body|{}body[0]
         final fun <get-body>(): kotlin/String // one.rarebit.flags.core/StoredPayload.body.<get-body>|<get-body>(){}[0]
@@ -344,12 +344,15 @@ final class one.rarebit.flags.core/StoredPayload { // one.rarebit.flags.core/Sto
         final fun <get-contextKey>(): kotlin/String? // one.rarebit.flags.core/StoredPayload.contextKey.<get-contextKey>|<get-contextKey>(){}[0]
     final val format // one.rarebit.flags.core/StoredPayload.format|{}format[0]
         final fun <get-format>(): kotlin/Int // one.rarebit.flags.core/StoredPayload.format.<get-format>|<get-format>(){}[0]
+    final val refusedEtag // one.rarebit.flags.core/StoredPayload.refusedEtag|{}refusedEtag[0]
+        final fun <get-refusedEtag>(): kotlin/String? // one.rarebit.flags.core/StoredPayload.refusedEtag.<get-refusedEtag>|<get-refusedEtag>(){}[0]
 
     final fun component1(): kotlin/String // one.rarebit.flags.core/StoredPayload.component1|component1(){}[0]
     final fun component2(): kotlin/String? // one.rarebit.flags.core/StoredPayload.component2|component2(){}[0]
     final fun component3(): kotlin/String? // one.rarebit.flags.core/StoredPayload.component3|component3(){}[0]
     final fun component4(): kotlin/Int // one.rarebit.flags.core/StoredPayload.component4|component4(){}[0]
-    final fun copy(kotlin/String = ..., kotlin/String? = ..., kotlin/String? = ..., kotlin/Int = ...): one.rarebit.flags.core/StoredPayload // one.rarebit.flags.core/StoredPayload.copy|copy(kotlin.String;kotlin.String?;kotlin.String?;kotlin.Int){}[0]
+    final fun component5(): kotlin/String? // one.rarebit.flags.core/StoredPayload.component5|component5(){}[0]
+    final fun copy(kotlin/String = ..., kotlin/String? = ..., kotlin/String? = ..., kotlin/Int = ..., kotlin/String? = ...): one.rarebit.flags.core/StoredPayload // one.rarebit.flags.core/StoredPayload.copy|copy(kotlin.String;kotlin.String?;kotlin.String?;kotlin.Int;kotlin.String?){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // one.rarebit.flags.core/StoredPayload.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // one.rarebit.flags.core/StoredPayload.hashCode|hashCode(){}[0]
     final fun toString(): kotlin/String // one.rarebit.flags.core/StoredPayload.toString|toString(){}[0]

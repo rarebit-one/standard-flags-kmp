@@ -1,8 +1,8 @@
 {
   "repository": "rarebit-one/standard_flags",
-  "commit": "702684088d796508c930b8ccaaf97a50b8e8c49c",
+  "commit": "efc0be41fed2a3b12e7c855b2332ed424ce04be5",
   "files": {
-    "README.md": "sha256:ed2eae2000356f562a7f943e3b53399fe198f2221faf2fff356761cb401c78e4",
+    "README.md": "sha256:d0c49e80289832eee7ccee4e85efd2fb400c3a5dd4178493b8b17e43fc7be496",
     "schema/fixture.schema.json": "sha256:a65051cd48f3c99f8b14b17afca22807bf1c4324cfd20b64872d27d6748acf0d",
     "schema/manifest.schema.json": "sha256:2977bd74a46445eb3170e7d444231fa6e7a20cf936658be1e87115f5ef106694",
     "versions/version_ranges.json": "sha256:c845abb5b830ff534aa3ecc925672c27a34d5ed5e2a872bc7c4c15019ffe2788",
