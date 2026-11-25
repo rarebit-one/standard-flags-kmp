@@ -26,4 +26,4 @@ The wire contract lives in the gem (`conformance/README.md` there and here). Whe
 
 ## Releasing
 
-Publishing goes through CI, never from a laptop. Pushing a `v*` tag runs `.github/workflows/release.yml`, which calls the shared `reusable-maven-central-release.yml` in `rarebit-one/.github`. The tag must match `VERSION_NAME` in `gradle.properties`, and `CHANGELOG.md` must have a `## [x.y.z]` entry. Check the artifacts locally with `./gradlew publishToMavenLocal`.
+Publishing goes through CI, never from a laptop. Pushing a `v*` tag runs `.github/workflows/release.yml`, which calls the shared `reusable-maven-central-release.yml` in `rarebit-one/.github`. The tag must match `VERSION_NAME` in `gradle.properties`, and `CHANGELOG.md` must have a `## [x.y.z]` entry. Check the artifacts locally with `./gradlew publishToMavenLocal` (add `-PRELEASE_SIGNING_ENABLED=false` for a release version, which otherwise needs a signing key).

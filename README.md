@@ -14,7 +14,7 @@ Targets: Android, iosArm64, iosSimulatorArm64, and the JVM (for tests). Built wi
 
 ## Installation
 
-Not published yet. Once it is, the artifacts are on Maven Central under `one.rarebit.flags`:
+The artifacts are on Maven Central under `one.rarebit.flags`:
 
 ```toml
 # gradle/libs.versions.toml
@@ -225,7 +225,7 @@ Releases follow semantic versioning, and each Kotlin module's public API is chec
 ```bash
 ./gradlew check                 # every test; on macOS this includes the iOS simulator
 ./gradlew iosSimulatorTests     # only the iOS simulator tests
-./gradlew publishToMavenLocal   # all modules into ~/.m2
+./gradlew publishToMavenLocal   # all modules into ~/.m2 (add -PRELEASE_SIGNING_ENABLED=false for a release version)
 ./gradlew updateKotlinAbi       # after an intended public API change; check fails on any other
 ```
 
