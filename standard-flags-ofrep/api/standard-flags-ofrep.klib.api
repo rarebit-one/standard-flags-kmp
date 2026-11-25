@@ -250,10 +250,6 @@ final class one.rarebit.flags.ofrep/ClientInfo { // one.rarebit.flags.ofrep/Clie
         final fun <get-version>(): kotlin/String? // one.rarebit.flags.ofrep/ClientInfo.version.<get-version>|<get-version>(){}[0]
 
     final fun applyTo(io.ktor.http/HeadersBuilder) // one.rarebit.flags.ofrep/ClientInfo.applyTo|applyTo(io.ktor.http.HeadersBuilder){}[0]
-    final fun component1(): kotlin/String // one.rarebit.flags.ofrep/ClientInfo.component1|component1(){}[0]
-    final fun component2(): kotlin/String? // one.rarebit.flags.ofrep/ClientInfo.component2|component2(){}[0]
-    final fun component3(): kotlin/Long? // one.rarebit.flags.ofrep/ClientInfo.component3|component3(){}[0]
-    final fun copy(kotlin/String = ..., kotlin/String? = ..., kotlin/Long? = ...): one.rarebit.flags.ofrep/ClientInfo // one.rarebit.flags.ofrep/ClientInfo.copy|copy(kotlin.String;kotlin.String?;kotlin.Long?){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // one.rarebit.flags.ofrep/ClientInfo.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // one.rarebit.flags.ofrep/ClientInfo.hashCode|hashCode(){}[0]
     final fun toString(): kotlin/String // one.rarebit.flags.ofrep/ClientInfo.toString|toString(){}[0]

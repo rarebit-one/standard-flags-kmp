@@ -8,7 +8,7 @@ All notable changes to this project are documented here. The format follows
 
 ### Changed
 
-- `PayloadLimits` (core) and `ApplyPolicy` (ofrep) are regular classes rather than data classes, so a field can be added later without breaking binary compatibility. Construction, properties, equality and `toString` are unchanged; `copy` and `componentN` are gone.
+- `PayloadLimits` (core), `ApplyPolicy` and `ClientInfo` (ofrep) are regular classes rather than data classes, so a field can be added later without breaking binary compatibility. Construction, properties, equality and `toString` are unchanged; `copy` and `componentN` are gone. `StoredPayload` stays a data class, but its KDoc now says destructuring isn't supported.
 - README: the contract check depends on the date. A build can start failing once a tombstone's `until` date passes; remove the wire, or pass `-PstandardFlags.today` to rebuild an old commit as it was.
 
 ### Added
