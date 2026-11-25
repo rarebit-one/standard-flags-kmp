@@ -6,9 +6,12 @@ import dev.openfeature.kotlin.sdk.Reason
 import dev.openfeature.kotlin.sdk.Value
 import dev.openfeature.kotlin.sdk.events.OpenFeatureProviderEvents
 import dev.openfeature.kotlin.sdk.exceptions.ErrorCode
+import dev.openfeature.kotlin.sdk.exceptions.OpenFeatureError
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.job
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -26,6 +29,7 @@ import one.rarebit.flags.ofrep.FlagsFetcher
 import one.rarebit.flags.ofrep.StandardFlagsClient
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -124,6 +128,38 @@ class StandardFlagsProviderTest {
         flags.status.first { it is FetchStatus.Updated }
         assertEquals(false, provider.getBooleanEvaluation("chat", true, null).value)
         provider.shutdown()
+    }
+
+    @Test
+    fun theProviderCanBeInitialisedAgainAfterShutdown() = runTest {
+        val fetcher = Fetcher(build) { FetchResult.Fresh(body.encodeToByteArray(), null) }
+        val flags = StandardFlagsClient(fetcher, definitions)
+        val provider = StandardFlagsProvider(flags, scope = providerScope())
+        provider.initialize(ImmutableContext(targetingKey = "a"))
+        provider.shutdown()
+        provider.initialize(ImmutableContext(targetingKey = "b"))
+        assertEquals(2, fetcher.calls, "the second registration fetched instead of throwing")
+        assertEquals("v1", flags.payload.value?.version)
+        provider.shutdown()
+    }
+
+    @Test
+    fun aShutdownDuringTheFirstFetchLetsInitializeReturn() = runTest {
+        val gate = CompletableDeferred<FetchResult>()
+        val flags = StandardFlagsClient(Fetcher(build) { gate.await() }, definitions)
+        val provider = StandardFlagsProvider(flags, scope = providerScope())
+        val init = async { provider.initialize(ImmutableContext(targetingKey = "a")) }
+        runCurrent()
+        provider.shutdown()
+        init.await() // returns normally with cached values, no CancellationException
+        assertNull(flags.payload.value)
+    }
+
+    @Test
+    fun aCancelledScopeFailsInitializeClearly() = runTest {
+        val dead = providerScope().also { it.cancel() }
+        val provider = StandardFlagsProvider(StandardFlagsClient(Fetcher(build) { FetchResult.NotModified }, definitions), scope = dead)
+        assertFailsWith<OpenFeatureError.ProviderFatalError> { provider.initialize(ImmutableContext(targetingKey = "a")) }
     }
 
     @Test

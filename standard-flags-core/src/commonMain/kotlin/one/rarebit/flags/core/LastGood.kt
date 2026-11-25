@@ -61,7 +61,13 @@ public data class StoredPayload(
 /**
  * Where the last good payload survives a cold start. Back it with the app's
  * own key-value store (DataStore, NSUserDefaults, a file); [StringLastGoodStore]
- * adapts any string store. Implementations must not throw for a missing value.
+ * adapts any string store.
+ *
+ * A custom store must keep every field of [StoredPayload], `client` and
+ * `format` included: a record that comes back without them never matches the
+ * running build, so it is never applied. Return null when nothing is stored.
+ * A store may throw; the client reports the failure (`storeError`) and keeps
+ * its in-memory values, so a throw is never fatal, only unsaved.
  */
 public interface LastGoodStore {
     public suspend fun load(): StoredPayload?

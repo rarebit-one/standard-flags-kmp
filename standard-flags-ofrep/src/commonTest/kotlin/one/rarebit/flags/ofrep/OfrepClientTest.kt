@@ -128,6 +128,21 @@ class OfrepClientTest {
     }
 
     @Test
+    fun theBufferGrowsToTheBodyAndAnUnboundedLimitDoesNotOverflow() = runTest {
+        val large = "z".repeat(100_000)
+        val growing = engine { respond(ByteReadChannel(large), HttpStatusCode.OK) }
+        val read = assertIs<FetchResult.Fresh>(OfrepClient(growing, "https://x.test/f", client).fetch(null, 200_000))
+        assertEquals(large, read.body.decodeToString())
+
+        val small = engine { respond(ByteReadChannel(body), HttpStatusCode.OK) }
+        val unbounded = assertIs<FetchResult.Fresh>(OfrepClient(small, "https://x.test/f", client).fetch(null, Int.MAX_VALUE))
+        assertEquals(body, unbounded.body.decodeToString())
+
+        val declared = engine { respond(body, HttpStatusCode.OK, headersOf(HttpHeaders.ContentLength, body.length.toString())) }
+        assertEquals(body, assertIs<FetchResult.Fresh>(OfrepClient(declared, "https://x.test/f", client).fetch(null, Int.MAX_VALUE)).body.decodeToString())
+    }
+
+    @Test
     fun networkErrorsAreFailures() = runTest {
         val broken = OfrepClient(engine { error("connection reset") }, "https://x.test/f", client)
         val failed = assertIs<FetchResult.Failed>(broken.fetch(null, 1024))

@@ -67,7 +67,9 @@ public interface FlagsFetcher {
  * request with no timeout can wait as long as the engine allows.
  *
  * @param url the bulk endpoint, such as `https://api.example.com/ofrep/v1/evaluate/flags`.
- * @param client the build, sent as headers and in the context.
+ * @param client the build, sent as headers and in the context. Pass it even when
+ *   the [ClientHeaders] plugin already sets the headers: it also keys the stored
+ *   payload by build, and without it a payload saved by another build could apply.
  * @param targetingKey the install key, for a pre-auth (public audience)
  *   endpoint; authenticated endpoints ignore it.
  * @param headers extra request headers, read on every call.

@@ -163,6 +163,12 @@ public class StandardFlagsClient(
     private var stopped = false
     private var inFlight: InFlight? = null
 
+    // A fetched payload has been applied in this generation: a bootstrap seed is older and is ignored.
+    private var fetchedLanded = false
+
+    // A clear of another context's stored record failed; load() retries it.
+    private var clearOwed = false
+
     private class InFlight(val generation: Long, val etag: String?) {
         val outcome = CompletableDeferred<RefreshOutcome>()
     }
@@ -203,6 +209,7 @@ public class StandardFlagsClient(
      * cancellation leaves it to run again on the next call.
      */
     public suspend fun load() {
+        if (mutex.withLock { clearOwed }) withContext(NonCancellable) { clearForeignRecord() }
         val (generation, key) = mutex.withLock {
             if (loaded) return
             generation to contextKey
@@ -229,13 +236,18 @@ public class StandardFlagsClient(
      * Seeds the cache from an embedded bootstrap payload (the same bulk body,
      * for example inside a `/me` response). It is treated like a fetched
      * payload: saved, used for If-None-Match, and applied by the [ApplyPolicy].
+     *
+     * A bootstrap body is never newer than a fetch, so once a fetched payload
+     * has landed for the current context a seed is ignored: it can't undo a
+     * live kill switch or replace a newer payload. The result is still the
+     * body's validation result.
      */
     public suspend fun seed(body: String): PayloadResult {
         load()
         val result = FlagPayload.parse(body, limits)
         if (result is PayloadResult.Accepted) {
             val generation = mutex.withLock { generation }
-            accept(generation, result.payload, null)
+            accept(generation, result.payload, null, fetched = false)
         }
         return result
     }
@@ -280,6 +292,8 @@ public class StandardFlagsClient(
             ticket.outcome.complete(outcome)
             return outcome
         } catch (error: Throwable) {
+            // Release the slot before waking joiners, so they start their own fetch instead of rejoining this one.
+            withContext(NonCancellable) { mutex.withLock { if (inFlight === ticket) inFlight = null } }
             ticket.outcome.cancel(CancellationException("the fetch was cancelled", error))
             throw error
         } finally {
@@ -311,11 +325,32 @@ public class StandardFlagsClient(
             failures = 0
             networkFailures = 0
             retryAt = null
+            fetchedLanded = false
             fetchStatus.value = FetchStatus.Idle
         }
+        // Runs to the end even if the caller's scope is being torn down (a sign-out), so the
+        // old context's record never outlives it on disk.
+        withContext(NonCancellable) { clearForeignRecord() }
+    }
+
+    /**
+     * Clears the stored record unless it belongs to the context current *now*
+     * (not the one a caller captured, so a quick A→B→C switch can't clear C's
+     * fresh record). A record that can't be read is cleared too. A failed
+     * clear is retried, then reported and retried again by [load].
+     */
+    private suspend fun clearForeignRecord() {
         storeMutex.withLock {
-            val stored = storeCall(StoreOperation.Load) { store.load() }.getOrNull()
-            if (stored != null && stored.contextKey != key) storeCall(StoreOperation.Clear) { store.clear() }
+            val current = mutex.withLock { contextKey }
+            val read = storeCall(StoreOperation.Load) { store.load() }
+            val stored = read.getOrNull()
+            val foreign = read.isFailure || (stored != null && stored.contextKey != current)
+            var cleared = !foreign
+            var attempts = 0
+            while (!cleared && attempts++ < CLEAR_ATTEMPTS) {
+                cleared = storeCall(StoreOperation.Clear) { store.clear() }.isSuccess
+            }
+            mutex.withLock { clearOwed = !cleared }
         }
     }
 
@@ -331,6 +366,8 @@ public class StandardFlagsClient(
                 FetchResult.TooLarge -> fail(FetchStatus.Rejected(RejectReason.TooLarge), null, null, null)
                 FetchResult.NotModified -> {
                     succeed()
+                    // The server confirmed the current payload; a bootstrap body is no newer.
+                    fetchedLanded = true
                     fetchStatus.value = FetchStatus.NotModified
                 }
                 is FetchResult.Unauthorized -> {
@@ -354,12 +391,14 @@ public class StandardFlagsClient(
      * Applies first (kill switches must never wait on the disk), then saves.
      * Only a saved payload becomes the pending one and supplies the ETag.
      */
-    private suspend fun accept(generation: Long, payload: FlagPayload, responseEtag: String?): RefreshOutcome {
+    private suspend fun accept(generation: Long, payload: FlagPayload, responseEtag: String?, fetched: Boolean = true): RefreshOutcome {
         val applied: Boolean
         val live: Set<String>
         val record: StoredPayload
         mutex.withLock {
             if (generation != this.generation) return RefreshOutcome.Discarded
+            if (!fetched && fetchedLanded) return RefreshOutcome.Discarded
+            if (fetched) fetchedLanded = true
             succeed()
             val current = active.value
             applied = !policy.freshValuesAtNextLaunch || (current == null && policy.firstPayloadAppliesLive)
@@ -378,11 +417,16 @@ public class StandardFlagsClient(
         // The save and what follows it run to the end even if the caller is cancelled, and never throw.
         return withContext(NonCancellable) {
             val saved = storeMutex.withLock {
-                if (mutex.withLock { generation != this@StandardFlagsClient.generation }) return@withLock false
+                // A seed whose fetch overtook it must not overwrite the fetched record.
+                val stale = mutex.withLock {
+                    generation != this@StandardFlagsClient.generation || (!fetched && fetchedLanded)
+                }
+                if (stale) return@withLock false
                 storeCall(StoreOperation.Save) { store.save(record) }.isSuccess
             }
             mutex.withLock {
                 if (generation != this@StandardFlagsClient.generation) return@withLock RefreshOutcome.Discarded
+                if (!fetched && fetchedLanded) return@withLock RefreshOutcome.Discarded
                 if (saved) {
                     latest.value = payload
                     etag = responseEtag ?: payload.etag
@@ -422,6 +466,7 @@ public class StandardFlagsClient(
 
     public companion object {
         private const val CLIENT_FAILURES_BEFORE_ETAG_RESET = 3
+        private const val CLEAR_ATTEMPTS = 3
         private val ENTITY_TAG = Regex("(W/)?\"[\\x21\\x23-\\x7e]{0,256}\"")
 
         /** The form [StandardFlagsClient] and the OpenFeature provider both key contexts by: trimmed, blank as none. */

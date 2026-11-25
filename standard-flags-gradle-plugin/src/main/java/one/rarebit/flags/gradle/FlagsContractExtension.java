@@ -46,8 +46,11 @@ public abstract class FlagsContractExtension {
         getWires().put(name, type);
     }
 
-    /** Declares a string wire and the values the app understands. */
+    /** Declares a string wire and the values the app understands (at least one; use {@code wire(name, "string")} for any). */
     public void stringWire(String name, String... values) {
+        if (values.length == 0) {
+            throw new IllegalArgumentException("stringWire(\"" + name + "\") needs the values the app understands; use wire(\"" + name + "\", \"string\") to accept any");
+        }
         getWires().put(name, "string");
         getValues().put(name, java.util.Arrays.asList(values));
     }

@@ -9,7 +9,12 @@ import dev.openfeature.kotlin.sdk.Reason
 import dev.openfeature.kotlin.sdk.Value
 import dev.openfeature.kotlin.sdk.events.OpenFeatureProviderEvents
 import dev.openfeature.kotlin.sdk.exceptions.ErrorCode
+import dev.openfeature.kotlin.sdk.exceptions.OpenFeatureError
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
@@ -25,6 +30,7 @@ import one.rarebit.flags.core.FlagPayload
 import one.rarebit.flags.core.FlagRead
 import one.rarebit.flags.core.StringFlag
 import one.rarebit.flags.ofrep.StandardFlagsClient
+import kotlin.concurrent.Volatile
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
@@ -51,7 +57,10 @@ import kotlin.time.Duration.Companion.seconds
  * @param initialFetchTimeout how long [initialize] and [onContextSet] wait for
  *   a fetch before reporting ready with the cached values (or code defaults).
  *   The fetch itself carries on in [scope] and applies when it lands.
- * @param scope where those fetches run; [shutdown] cancels it.
+ * @param scope where those fetches run. Each [initialize] opens a child of it
+ *   and [shutdown] cancels only that child, so the provider can be registered
+ *   again. If [scope] itself is cancelled, [initialize] fails with
+ *   [OpenFeatureError.ProviderFatalError].
  */
 public class StandardFlagsProvider(
     private val flags: StandardFlagsClient,
@@ -64,7 +73,17 @@ public class StandardFlagsProvider(
         override val name: String = NAME
     }
 
+    // The child of [scope] this registration's fetches run in; replaced by each initialize.
+    @Volatile
+    private var fetches: CoroutineScope? = null
+
     override suspend fun initialize(initialContext: EvaluationContext?) {
+        val parent = scope.coroutineContext[Job]
+        if (parent != null && !parent.isActive) {
+            throw OpenFeatureError.ProviderFatalError("the provider's coroutine scope is cancelled; pass an active scope")
+        }
+        fetches?.cancel()
+        fetches = CoroutineScope(scope.coroutineContext + SupervisorJob(parent))
         // Adopt the key before loading, so the payload saved for it is the launch value.
         initialContext?.let { flags.setContext(it.getTargetingKey()) }
         flags.load()
@@ -77,13 +96,20 @@ public class StandardFlagsProvider(
     }
 
     override fun shutdown() {
-        scope.cancel()
+        fetches?.cancel()
+        fetches = null
     }
 
     /** Starts a refresh in [scope] and waits up to [initialFetchTimeout]; a slow fetch still completes. */
     private suspend fun fetchAndWait() {
-        val fetch = scope.async { flags.refresh() }
-        withTimeoutOrNull(initialFetchTimeout) { fetch.await() }
+        val fetches = fetches ?: throw OpenFeatureError.ProviderNotReadyError("the provider is shut down; initialize it again")
+        val fetch = fetches.async { flags.refresh() }
+        try {
+            withTimeoutOrNull(initialFetchTimeout) { fetch.await() }
+        } catch (cancelled: CancellationException) {
+            // A shutdown cancelled the fetch, not us: report ready with what is cached.
+            currentCoroutineContext().ensureActive()
+        }
     }
 
     override fun getBooleanEvaluation(key: String, defaultValue: Boolean, context: EvaluationContext?): ProviderEvaluation<Boolean> {

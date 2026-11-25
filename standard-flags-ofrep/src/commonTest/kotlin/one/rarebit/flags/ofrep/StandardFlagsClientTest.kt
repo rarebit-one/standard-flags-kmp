@@ -116,6 +116,7 @@ class StandardFlagsClientTest {
     private class FlakyStore(var stored: StoredPayload? = null) : LastGoodStore {
         var failSave = false
         var failLoad = false
+        var clearFailures = 0
         var gate: CompletableDeferred<Unit>? = null
         val saving = CompletableDeferred<Unit>()
 
@@ -132,8 +133,132 @@ class StandardFlagsClientTest {
         }
 
         override suspend fun clear() {
+            if (clearFailures > 0) {
+                clearFailures--
+                error("disk busy")
+            }
             stored = null
         }
+    }
+
+    @Test
+    fun aSignOutWhileASaveIsBlockedStillClearsTheStoreEvenIfItsScopeIsCancelled() = runTest {
+        val store = FlakyStore()
+        store.gate = CompletableDeferred()
+        val flags = StandardFlagsClient(Script(fresh(body("a1", on("chat")))), definitions, store, contextKey = "user-a")
+        val refresh = launch { flags.refresh() }
+        store.saving.await() // a1 is applied and its save is blocked inside the store
+
+        val signOut = launch { flags.setContext(null) }
+        runCurrent()
+        assertEquals(FlagState.NotLoaded, flags.state(chat), "the old values went at once")
+        signOut.cancel() // the scope that signed out is torn down while the clear waits on the save
+        store.gate!!.complete(Unit)
+        refresh.join()
+        signOut.join()
+        runCurrent()
+        assertNull(store.stored, "user A's record didn't outlive the sign-out")
+        assertEquals(FlagState.NotLoaded, flags.state(chat))
+    }
+
+    @Test
+    fun aFailedClearIsRetriedThenReportedAndRetriedByLoad() = runTest {
+        val store = FlakyStore(stored(body("a1", on("chat")), key = "user-a"))
+        store.clearFailures = 2
+        val flags = StandardFlagsClient(Script(), definitions, store, contextKey = "user-a")
+        flags.load()
+        flags.setContext("user-b")
+        assertNull(store.stored, "two failures, then the third attempt cleared it")
+
+        store.stored = stored(body("b1", on("chat")), key = "user-b")
+        store.clearFailures = 10
+        flags.setContext(null)
+        assertEquals(StoreOperation.Clear, flags.storeError.value?.operation)
+        assertEquals("user-b", store.stored?.contextKey, "still there after every attempt failed")
+        store.clearFailures = 0
+        flags.load()
+        assertNull(store.stored, "load retried the owed clear")
+    }
+
+    @Test
+    fun aRecordThatCantBeReadIsClearedOnSignOut() = runTest {
+        val store = FlakyStore(stored(body("a1", on("chat")), key = "user-a"))
+        val flags = StandardFlagsClient(Script(), definitions, store, contextKey = "user-a")
+        flags.load()
+        store.failLoad = true
+        flags.setContext(null)
+        assertNull(store.stored)
+    }
+
+    @Test
+    fun aSeedRacingARefreshNeverUndoesTheFetchedKillSwitch() = runTest {
+        val store = FlakyStore(stored(body("v1", on("chat"))))
+        val flags = StandardFlagsClient(Script(fresh(body("v2", off("chat", "KILL_SWITCH")))), definitions, store, contextKey = "acct")
+        flags.load()
+        store.gate = CompletableDeferred()
+        val refresh = launch { flags.refresh() }
+        store.saving.await() // the kill switch is live; its save is blocked
+        assertEquals(FlagState.Off, flags.state(chat))
+
+        val seeded = async { flags.seed(body("boot", on("chat"))) }
+        runCurrent()
+        assertEquals(FlagState.Off, flags.state(chat), "the older bootstrap body didn't undo the kill switch")
+        store.gate!!.complete(Unit)
+        refresh.join()
+        assertIs<PayloadResult.Accepted>(seeded.await())
+        assertEquals(FlagState.Off, flags.state(chat))
+        assertEquals("v2", flags.pending.value?.version)
+        assertTrue(store.stored!!.body.contains("\"v2\""))
+    }
+
+    @Test
+    fun aSeedOvertakenByAFetchNeverBecomesThePendingOne() = runTest {
+        val store = FlakyStore()
+        store.gate = CompletableDeferred()
+        val flags = StandardFlagsClient(Script(fresh(body("v2", off("chat", "KILL_SWITCH")))), definitions, store, contextKey = "acct")
+        val seeded = launch { flags.seed(body("boot", on("chat"))) }
+        store.saving.await() // the seed applied and its save is blocked
+        assertEquals(FlagState.On, flags.state(chat))
+        val refresh = launch { flags.refresh() }
+        runCurrent()
+        assertEquals(FlagState.Off, flags.state(chat), "the fetched kill switch applied live")
+        store.gate!!.complete(Unit)
+        seeded.join()
+        refresh.join()
+        assertEquals("v2", flags.pending.value?.version)
+        assertTrue(store.stored!!.body.contains("\"v2\""))
+        assertEquals(FlagState.Off, flags.state(chat))
+    }
+
+    @Test
+    fun aSeedAfterAFetchOrA304IsIgnored() = runTest {
+        val flags = StandardFlagsClient(Script(fresh(body("v2", off("chat")))), definitions, contextKey = "acct")
+        flags.refresh()
+        flags.seed(body("boot", on("chat")))
+        assertEquals(FlagState.Off, flags.state(chat))
+        assertEquals("v2", flags.pending.value?.version)
+
+        val store = InMemoryLastGoodStore(stored(body("v3", off("chat"))))
+        val confirmed = StandardFlagsClient(Script(FetchResult.NotModified), definitions, store, contextKey = "acct")
+        confirmed.refresh()
+        confirmed.seed(body("boot", on("chat")))
+        assertEquals(FlagState.Off, confirmed.state(chat), "a 304 confirmed v3; the bootstrap body is no newer")
+    }
+
+    @Test
+    fun aJoinerWhoseOwnerIsCancelledRunsItsOwnFetchOnce() = runTest {
+        val gate = CompletableDeferred<FetchResult>()
+        val script = Script(gate, fresh(body("v1", on("chat"))))
+        val flags = StandardFlagsClient(script, definitions)
+        val owner = launch { flags.refresh() }
+        runCurrent()
+        val joiner = async { flags.refresh() }
+        runCurrent()
+        owner.cancel()
+        val outcome = joiner.await()
+        assertIs<RefreshOutcome.Completed>(outcome)
+        assertEquals(2, script.sent.size, "one fetch for the owner, one for the joiner, no spin")
+        assertEquals(FlagState.On, flags.state(chat))
     }
 
     @Test

@@ -104,6 +104,17 @@ class ManifestContractTest {
     }
 
     @Test
+    void stringWireNeedsValues() {
+        org.gradle.api.Project project = org.gradle.testfixtures.ProjectBuilder.builder().build();
+        project.getPluginManager().apply("one.rarebit.flags.contract");
+        FlagsContractExtension extension = project.getExtensions().getByType(FlagsContractExtension.class);
+        IllegalArgumentException error = assertThrows(IllegalArgumentException.class, () -> extension.stringWire("homeHero"));
+        assertTrue(error.getMessage().contains("use wire(\"homeHero\", \"string\")"));
+        extension.stringWire("homeHero", "control");
+        assertEquals("string", extension.getWires().get().get("homeHero"));
+    }
+
+    @Test
     void refusesAMalformedManifest() {
         IllegalArgumentException fraction = assertThrows(IllegalArgumentException.class,
             () -> ManifestContract.parse("{\"version\": 2.5, \"flags\": []}"));
