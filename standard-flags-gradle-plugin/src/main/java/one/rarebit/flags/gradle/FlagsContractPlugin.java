@@ -23,6 +23,7 @@ public class FlagsContractPlugin implements Plugin<Project> {
             t.getManifest().set(extension.getManifest());
             t.getAudience().set(extension.getAudience());
             t.getWires().set(extension.getWires());
+            t.getValues().set(extension.getValues());
             t.getWiresFile().set(extension.getWiresFile());
             t.getFailOnDeprecated().set(extension.getFailOnDeprecated());
             t.getReport().set(project.getLayout().getBuildDirectory().file("reports/standard-flags/contract.txt"));

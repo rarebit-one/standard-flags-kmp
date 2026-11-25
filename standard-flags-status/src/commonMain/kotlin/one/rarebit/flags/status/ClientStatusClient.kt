@@ -4,20 +4,18 @@ import io.ktor.client.HttpClient
 import io.ktor.client.plugins.api.ClientPlugin
 import io.ktor.client.plugins.api.createClientPlugin
 import io.ktor.client.plugins.expectSuccess
-import io.ktor.client.request.get
+import io.ktor.client.request.prepareGet
 import io.ktor.client.request.header
-import io.ktor.client.statement.bodyAsChannel
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
-import io.ktor.utils.io.readBuffer
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.io.readByteArray
 import one.rarebit.flags.ofrep.ClientInfo
+import one.rarebit.flags.ofrep.readBounded
 
 /**
  * The upgrade status of this build as a [StateFlow], for a nudging or
@@ -48,17 +46,18 @@ public class ClientStatusClient(
     /** Asks the server. Returns the new status, or null when the check failed (the old one stays). */
     public suspend fun check(): ClientStatus? {
         val parsed = try {
-            val response = http.get(url) {
+            http.prepareGet(url) {
                 expectSuccess = false
                 client?.applyTo(headers)
                 header(HttpHeaders.Accept, ContentType.Application.Json.toString())
-            }
-            val body = response.bodyAsChannel().readBuffer(MAX_BYTES + 1).readByteArray()
-            when {
-                body.size > MAX_BYTES -> null
-                response.status == HttpStatusCode.OK -> ClientStatusParser.parse(body.decodeToString())
-                response.status.value == 426 -> ClientStatusParser.parseUpgradeRequired(body.decodeToString())
-                else -> null
+            }.execute { response ->
+                val body = response.readBounded(MAX_BYTES)?.decodeToString()
+                when {
+                    body == null -> null
+                    response.status == HttpStatusCode.OK -> ClientStatusParser.parse(body)
+                    response.status.value == 426 -> ClientStatusParser.parseUpgradeRequired(body)
+                    else -> null
+                }
             }
         } catch (cancellation: CancellationException) {
             throw cancellation
@@ -76,7 +75,7 @@ public class ClientStatusClient(
     }
 
     private companion object {
-        const val MAX_BYTES = 16 * 1024L
+        const val MAX_BYTES = 16 * 1024
     }
 }
 
@@ -94,8 +93,10 @@ public class UpgradeRequiredDetectorConfig {
  * HttpClient { install(UpgradeRequiredDetector) { status = clientStatus } }
  * ```
  *
- * It reads the body of 426 responses only (Ktor 3 keeps response bodies, so
- * the app can still read it too).
+ * It reads the body of 426 responses only. Ktor 3 saves the body of an
+ * ordinary call, so the app can still read it. A streaming call
+ * (`prepare*().execute { }`) doesn't save it: there the detector consumes a
+ * 426 body before the app's block sees it.
  */
 public val UpgradeRequiredDetector: ClientPlugin<UpgradeRequiredDetectorConfig> =
     createClientPlugin("StandardFlagsUpgradeRequiredDetector", ::UpgradeRequiredDetectorConfig) {

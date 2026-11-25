@@ -49,5 +49,13 @@ class FlagsContractPluginFunctionalTest {
         write("flags.wires.json", "{\"homeHero\": \"string\", \"tester_feedback\": \"boolean\"}");
         BuildResult failed = runner("checkFlagsManifest").buildAndFail();
         assertTrue(failed.getOutput().contains("wire \"tester_feedback\" is not exposed to audience \"mobile\""), failed.getOutput());
+
+        write("flags.wires.json", "{\"homeHero\": {\"type\": \"string\", \"values\": [\"control\"]}}");
+        BuildResult drift = runner("checkFlagsManifest").buildAndFail();
+        assertTrue(drift.getOutput().contains("can carry [savings], which the app doesn't declare"), drift.getOutput());
+
+        write("flags.wires.json", "{\"homeHero\": ");
+        BuildResult unreadable = runner("checkFlagsManifest").buildAndFail();
+        assertTrue(unreadable.getOutput().contains("standardFlags: can't read"), unreadable.getOutput());
     }
 }

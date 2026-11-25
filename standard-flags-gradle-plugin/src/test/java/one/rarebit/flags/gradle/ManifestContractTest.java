@@ -92,6 +92,28 @@ class ManifestContractTest {
     }
 
     @Test
+    void failsAStringValueTheAppDoesNotDeclare() {
+        Map<String, java.util.Set<String>> values = new LinkedHashMap<>();
+        values.put("homeHero", new java.util.LinkedHashSet<>(java.util.Arrays.asList("control", "legacy")));
+        ManifestContract.Result result = ManifestContract.parse(V1).check("mobile", reads("homeHero", ManifestContract.Type.STRING), values);
+        assertEquals("wire \"homeHero\" can carry [savings], which the app doesn't declare (it would read its code default)", result.errors.get(0));
+        assertEquals("wire \"homeHero\": the server never sends [legacy], which the app declares", result.warnings.get(0));
+
+        values.put("homeHero", new java.util.LinkedHashSet<>(java.util.Arrays.asList("control", "savings")));
+        assertTrue(ManifestContract.parse(V1).check("mobile", reads("homeHero", ManifestContract.Type.STRING), values).ok());
+    }
+
+    @Test
+    void refusesAMalformedManifest() {
+        IllegalArgumentException fraction = assertThrows(IllegalArgumentException.class,
+            () -> ManifestContract.parse("{\"version\": 2.5, \"flags\": []}"));
+        assertTrue(fraction.getMessage().contains("not a whole number"));
+        IllegalArgumentException keyless = assertThrows(IllegalArgumentException.class,
+            () -> ManifestContract.parse("{\"version\": 1, \"flags\": [{\"type\": \"boolean\", \"audiences\": {}}]}"));
+        assertTrue(keyless.getMessage().contains("has no key"));
+    }
+
+    @Test
     void refusesAnUnknownManifestVersion() {
         IllegalArgumentException error = assertThrows(IllegalArgumentException.class,
             () -> ManifestContract.parse("{\"version\": 3, \"flags\": []}"));

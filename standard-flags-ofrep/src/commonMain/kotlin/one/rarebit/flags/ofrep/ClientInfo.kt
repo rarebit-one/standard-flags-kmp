@@ -3,6 +3,7 @@ package one.rarebit.flags.ofrep
 import io.ktor.client.plugins.api.ClientPlugin
 import io.ktor.client.plugins.api.createClientPlugin
 import io.ktor.http.HeadersBuilder
+import one.rarebit.flags.core.Version
 
 /**
  * Which build is asking: sent as `X-Client-Platform`, `X-Client-Version` and
@@ -11,7 +12,11 @@ import io.ktor.http.HeadersBuilder
  * `/client/status`. A missing or unparseable version counts as an unknown
  * build, which never gets a `min_client` flag and is never forced to upgrade.
  *
- * @property platform `android`, `ios`, `web` or `desktop` (the server's allowlist).
+ * The server never errors on a bad value; it silently treats the build as
+ * unknown. So a version like `1.4.0 (381)` ships without complaint and quietly
+ * loses every `min_client` flag. Check [isRecognised] in a debug build or a test.
+ *
+ * @property platform `android`, `ios`, `web` or `desktop` (the server's default allowlist).
  * @property version the app's SemVer version, such as `0.5.0`.
  * @property build the build number, a non-negative integer.
  */
@@ -25,6 +30,16 @@ public data class ClientInfo(
         require(build == null || build >= 0) { "build must not be negative" }
     }
 
+    /**
+     * Whether the server will read this as a known build: a platform on its
+     * default allowlist and a version that parses as SemVer (or its shorthands).
+     */
+    public val isRecognised: Boolean
+        get() = platform.lowercase() in KNOWN_PLATFORMS && Version.parse(version) != null
+
+    /** Identifies the build for the last-good store: a payload saved by another build isn't applied. */
+    public val fingerprint: String get() = "${platform.lowercase()}/${version.orEmpty()}/${build ?: ""}"
+
     /** Sets the three headers on [headers], leaving any the request already has. */
     public fun applyTo(headers: HeadersBuilder) {
         if (!headers.contains(HEADER_PLATFORM)) headers.append(HEADER_PLATFORM, platform)
@@ -36,6 +51,9 @@ public data class ClientInfo(
         public const val HEADER_PLATFORM: String = "X-Client-Platform"
         public const val HEADER_VERSION: String = "X-Client-Version"
         public const val HEADER_BUILD: String = "X-Client-Build"
+
+        /** The server's default platform allowlist. */
+        public val KNOWN_PLATFORMS: Set<String> = setOf("android", "ios", "web", "desktop")
     }
 }
 

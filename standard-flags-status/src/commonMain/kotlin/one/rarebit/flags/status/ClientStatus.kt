@@ -22,9 +22,9 @@ public sealed interface ClientStatus {
     public data class Ok(override val details: StatusDetails) : ClientStatus
 
     /**
-     * A newer build is available. [enforceAt] is when this build will be
-     * required to upgrade (an ISO 8601 instant), null when no enforcement is
-     * scheduled. Nudge, don't block.
+     * A newer build is available. [enforceAt] is the UTC date (`YYYY-MM-DD`)
+     * from which this build will be required to upgrade, null when no
+     * enforcement is scheduled. Nudge, don't block.
      */
     public data class UpgradeRecommended(override val details: StatusDetails, val enforceAt: String?) : ClientStatus
 
@@ -41,6 +41,8 @@ public sealed interface ClientStatus {
  * The fields of a `/client/status` answer, each null when absent or of the
  * wrong type.
  *
+ * @property enforceAt the UTC date (`YYYY-MM-DD`) enforcement starts, also
+ *   present once it has; null when absent or not a date.
  * @property storeUrl where to send the user to upgrade.
  */
 public data class StatusDetails(
@@ -64,8 +66,8 @@ public object ClientStatusParser {
      * `{"status": "ok" | "upgrade_recommended" | "upgrade_required" | "unknown", "platform", "version",
      * "min_version", "recommended", "enforce_at", "store_url"}`. Null when the body isn't a JSON object.
      */
-    // TODO(standard_flags 3c): run wire/client_status.json once the gem ships it
-    // (scripts/sync-conformance vendors it when the pinned commit has it).
+    // Pinned by wire/client_status.json (standard_flags 3c); the status tests
+    // run it as soon as scripts/sync-conformance vendors it.
     public fun parse(body: String): ClientStatus? {
         val document = parseObject(body) ?: return null
         val details = StatusDetails(
@@ -73,7 +75,7 @@ public object ClientStatusParser {
             version = document.text("version"),
             minVersion = document.text("min_version"),
             recommended = document.text("recommended"),
-            enforceAt = document.text("enforce_at"),
+            enforceAt = document.text("enforce_at")?.takeIf { DATE.matches(it) },
             storeUrl = document.text("store_url"),
         )
         return when (document.text("status")) {
@@ -101,6 +103,8 @@ public object ClientStatusParser {
     }
 
     public const val UPGRADE_REQUIRED_CODE: String = "client_upgrade_required"
+
+    private val DATE = Regex("[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])")
 
     private fun parseObject(body: String): JsonObject? = try {
         json.parseToJsonElement(body) as? JsonObject

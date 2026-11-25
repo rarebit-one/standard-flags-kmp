@@ -8,6 +8,7 @@ This is a public repository: keep code, docs, commits and PRs generic.
 - Work in a linked worktree (`git worktree add .worktrees/<slug> -b <branch> origin/main`), never in the main checkout.
 - Commits are signed. Changes go through pull requests; `main` is protected.
 - Run `./gradlew check` before pushing. On macOS it also runs the iOS simulator tests; `./gradlew iosSimulatorTests` runs only those.
+- `check` also compares each Kotlin module's public API with its `api/` dump. After an intended API change, run `./gradlew updateKotlinAbi` on macOS (so the iOS klib dump is complete) and commit the dumps.
 
 ## Layout
 

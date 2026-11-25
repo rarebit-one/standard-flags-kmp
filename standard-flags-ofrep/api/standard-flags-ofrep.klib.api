@@ -1,0 +1,331 @@
+// Klib ABI Dump
+// Targets: [iosArm64, iosSimulatorArm64]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <standard-flags-kmp:standard-flags-ofrep>
+final enum class one.rarebit.flags.ofrep/StoreOperation : kotlin/Enum<one.rarebit.flags.ofrep/StoreOperation> { // one.rarebit.flags.ofrep/StoreOperation|null[0]
+    enum entry Clear // one.rarebit.flags.ofrep/StoreOperation.Clear|null[0]
+    enum entry Load // one.rarebit.flags.ofrep/StoreOperation.Load|null[0]
+    enum entry Save // one.rarebit.flags.ofrep/StoreOperation.Save|null[0]
+
+    final val entries // one.rarebit.flags.ofrep/StoreOperation.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<one.rarebit.flags.ofrep/StoreOperation> // one.rarebit.flags.ofrep/StoreOperation.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): one.rarebit.flags.ofrep/StoreOperation // one.rarebit.flags.ofrep/StoreOperation.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<one.rarebit.flags.ofrep/StoreOperation> // one.rarebit.flags.ofrep/StoreOperation.values|values#static(){}[0]
+}
+
+abstract interface one.rarebit.flags.ofrep/FlagsFetcher { // one.rarebit.flags.ofrep/FlagsFetcher|null[0]
+    open val client // one.rarebit.flags.ofrep/FlagsFetcher.client|{}client[0]
+        open fun <get-client>(): one.rarebit.flags.ofrep/ClientInfo? // one.rarebit.flags.ofrep/FlagsFetcher.client.<get-client>|<get-client>(){}[0]
+
+    abstract suspend fun fetch(kotlin/String?, kotlin/Int): one.rarebit.flags.ofrep/FetchResult // one.rarebit.flags.ofrep/FlagsFetcher.fetch|fetch(kotlin.String?;kotlin.Int){}[0]
+}
+
+sealed interface one.rarebit.flags.ofrep/FetchResult { // one.rarebit.flags.ofrep/FetchResult|null[0]
+    final class Failed : one.rarebit.flags.ofrep/FetchResult { // one.rarebit.flags.ofrep/FetchResult.Failed|null[0]
+        constructor <init>(kotlin/Int?, kotlin.time/Duration?, kotlin/Throwable?) // one.rarebit.flags.ofrep/FetchResult.Failed.<init>|<init>(kotlin.Int?;kotlin.time.Duration?;kotlin.Throwable?){}[0]
+
+        final val cause // one.rarebit.flags.ofrep/FetchResult.Failed.cause|{}cause[0]
+            final fun <get-cause>(): kotlin/Throwable? // one.rarebit.flags.ofrep/FetchResult.Failed.cause.<get-cause>|<get-cause>(){}[0]
+        final val retryAfter // one.rarebit.flags.ofrep/FetchResult.Failed.retryAfter|{}retryAfter[0]
+            final fun <get-retryAfter>(): kotlin.time/Duration? // one.rarebit.flags.ofrep/FetchResult.Failed.retryAfter.<get-retryAfter>|<get-retryAfter>(){}[0]
+        final val status // one.rarebit.flags.ofrep/FetchResult.Failed.status|{}status[0]
+            final fun <get-status>(): kotlin/Int? // one.rarebit.flags.ofrep/FetchResult.Failed.status.<get-status>|<get-status>(){}[0]
+
+        final fun component1(): kotlin/Int? // one.rarebit.flags.ofrep/FetchResult.Failed.component1|component1(){}[0]
+        final fun component2(): kotlin.time/Duration? // one.rarebit.flags.ofrep/FetchResult.Failed.component2|component2(){}[0]
+        final fun component3(): kotlin/Throwable? // one.rarebit.flags.ofrep/FetchResult.Failed.component3|component3(){}[0]
+        final fun copy(kotlin/Int? = ..., kotlin.time/Duration? = ..., kotlin/Throwable? = ...): one.rarebit.flags.ofrep/FetchResult.Failed // one.rarebit.flags.ofrep/FetchResult.Failed.copy|copy(kotlin.Int?;kotlin.time.Duration?;kotlin.Throwable?){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // one.rarebit.flags.ofrep/FetchResult.Failed.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // one.rarebit.flags.ofrep/FetchResult.Failed.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // one.rarebit.flags.ofrep/FetchResult.Failed.toString|toString(){}[0]
+    }
+
+    final class Fresh : one.rarebit.flags.ofrep/FetchResult { // one.rarebit.flags.ofrep/FetchResult.Fresh|null[0]
+        constructor <init>(kotlin/ByteArray, kotlin/String?) // one.rarebit.flags.ofrep/FetchResult.Fresh.<init>|<init>(kotlin.ByteArray;kotlin.String?){}[0]
+
+        final val body // one.rarebit.flags.ofrep/FetchResult.Fresh.body|{}body[0]
+            final fun <get-body>(): kotlin/ByteArray // one.rarebit.flags.ofrep/FetchResult.Fresh.body.<get-body>|<get-body>(){}[0]
+        final val etag // one.rarebit.flags.ofrep/FetchResult.Fresh.etag|{}etag[0]
+            final fun <get-etag>(): kotlin/String? // one.rarebit.flags.ofrep/FetchResult.Fresh.etag.<get-etag>|<get-etag>(){}[0]
+
+        final fun toString(): kotlin/String // one.rarebit.flags.ofrep/FetchResult.Fresh.toString|toString(){}[0]
+    }
+
+    final class Unauthorized : one.rarebit.flags.ofrep/FetchResult { // one.rarebit.flags.ofrep/FetchResult.Unauthorized|null[0]
+        constructor <init>(kotlin/Int) // one.rarebit.flags.ofrep/FetchResult.Unauthorized.<init>|<init>(kotlin.Int){}[0]
+
+        final val status // one.rarebit.flags.ofrep/FetchResult.Unauthorized.status|{}status[0]
+            final fun <get-status>(): kotlin/Int // one.rarebit.flags.ofrep/FetchResult.Unauthorized.status.<get-status>|<get-status>(){}[0]
+
+        final fun component1(): kotlin/Int // one.rarebit.flags.ofrep/FetchResult.Unauthorized.component1|component1(){}[0]
+        final fun copy(kotlin/Int = ...): one.rarebit.flags.ofrep/FetchResult.Unauthorized // one.rarebit.flags.ofrep/FetchResult.Unauthorized.copy|copy(kotlin.Int){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // one.rarebit.flags.ofrep/FetchResult.Unauthorized.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // one.rarebit.flags.ofrep/FetchResult.Unauthorized.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // one.rarebit.flags.ofrep/FetchResult.Unauthorized.toString|toString(){}[0]
+    }
+
+    final object NotModified : one.rarebit.flags.ofrep/FetchResult { // one.rarebit.flags.ofrep/FetchResult.NotModified|null[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // one.rarebit.flags.ofrep/FetchResult.NotModified.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // one.rarebit.flags.ofrep/FetchResult.NotModified.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // one.rarebit.flags.ofrep/FetchResult.NotModified.toString|toString(){}[0]
+    }
+
+    final object TooLarge : one.rarebit.flags.ofrep/FetchResult { // one.rarebit.flags.ofrep/FetchResult.TooLarge|null[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // one.rarebit.flags.ofrep/FetchResult.TooLarge.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // one.rarebit.flags.ofrep/FetchResult.TooLarge.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // one.rarebit.flags.ofrep/FetchResult.TooLarge.toString|toString(){}[0]
+    }
+}
+
+sealed interface one.rarebit.flags.ofrep/FetchStatus { // one.rarebit.flags.ofrep/FetchStatus|null[0]
+    final class Failed : one.rarebit.flags.ofrep/FetchStatus { // one.rarebit.flags.ofrep/FetchStatus.Failed|null[0]
+        constructor <init>(kotlin/Int?, kotlin.time/Duration, kotlin/Throwable?) // one.rarebit.flags.ofrep/FetchStatus.Failed.<init>|<init>(kotlin.Int?;kotlin.time.Duration;kotlin.Throwable?){}[0]
+
+        final val cause // one.rarebit.flags.ofrep/FetchStatus.Failed.cause|{}cause[0]
+            final fun <get-cause>(): kotlin/Throwable? // one.rarebit.flags.ofrep/FetchStatus.Failed.cause.<get-cause>|<get-cause>(){}[0]
+        final val retryIn // one.rarebit.flags.ofrep/FetchStatus.Failed.retryIn|{}retryIn[0]
+            final fun <get-retryIn>(): kotlin.time/Duration // one.rarebit.flags.ofrep/FetchStatus.Failed.retryIn.<get-retryIn>|<get-retryIn>(){}[0]
+        final val status // one.rarebit.flags.ofrep/FetchStatus.Failed.status|{}status[0]
+            final fun <get-status>(): kotlin/Int? // one.rarebit.flags.ofrep/FetchStatus.Failed.status.<get-status>|<get-status>(){}[0]
+
+        final fun component1(): kotlin/Int? // one.rarebit.flags.ofrep/FetchStatus.Failed.component1|component1(){}[0]
+        final fun component2(): kotlin.time/Duration // one.rarebit.flags.ofrep/FetchStatus.Failed.component2|component2(){}[0]
+        final fun component3(): kotlin/Throwable? // one.rarebit.flags.ofrep/FetchStatus.Failed.component3|component3(){}[0]
+        final fun copy(kotlin/Int? = ..., kotlin.time/Duration = ..., kotlin/Throwable? = ...): one.rarebit.flags.ofrep/FetchStatus.Failed // one.rarebit.flags.ofrep/FetchStatus.Failed.copy|copy(kotlin.Int?;kotlin.time.Duration;kotlin.Throwable?){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // one.rarebit.flags.ofrep/FetchStatus.Failed.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // one.rarebit.flags.ofrep/FetchStatus.Failed.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // one.rarebit.flags.ofrep/FetchStatus.Failed.toString|toString(){}[0]
+    }
+
+    final class Rejected : one.rarebit.flags.ofrep/FetchStatus { // one.rarebit.flags.ofrep/FetchStatus.Rejected|null[0]
+        constructor <init>(one.rarebit.flags.core/RejectReason) // one.rarebit.flags.ofrep/FetchStatus.Rejected.<init>|<init>(one.rarebit.flags.core.RejectReason){}[0]
+
+        final val reason // one.rarebit.flags.ofrep/FetchStatus.Rejected.reason|{}reason[0]
+            final fun <get-reason>(): one.rarebit.flags.core/RejectReason // one.rarebit.flags.ofrep/FetchStatus.Rejected.reason.<get-reason>|<get-reason>(){}[0]
+
+        final fun component1(): one.rarebit.flags.core/RejectReason // one.rarebit.flags.ofrep/FetchStatus.Rejected.component1|component1(){}[0]
+        final fun copy(one.rarebit.flags.core/RejectReason = ...): one.rarebit.flags.ofrep/FetchStatus.Rejected // one.rarebit.flags.ofrep/FetchStatus.Rejected.copy|copy(one.rarebit.flags.core.RejectReason){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // one.rarebit.flags.ofrep/FetchStatus.Rejected.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // one.rarebit.flags.ofrep/FetchStatus.Rejected.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // one.rarebit.flags.ofrep/FetchStatus.Rejected.toString|toString(){}[0]
+    }
+
+    final class Stopped : one.rarebit.flags.ofrep/FetchStatus { // one.rarebit.flags.ofrep/FetchStatus.Stopped|null[0]
+        constructor <init>(kotlin/Int) // one.rarebit.flags.ofrep/FetchStatus.Stopped.<init>|<init>(kotlin.Int){}[0]
+
+        final val status // one.rarebit.flags.ofrep/FetchStatus.Stopped.status|{}status[0]
+            final fun <get-status>(): kotlin/Int // one.rarebit.flags.ofrep/FetchStatus.Stopped.status.<get-status>|<get-status>(){}[0]
+
+        final fun component1(): kotlin/Int // one.rarebit.flags.ofrep/FetchStatus.Stopped.component1|component1(){}[0]
+        final fun copy(kotlin/Int = ...): one.rarebit.flags.ofrep/FetchStatus.Stopped // one.rarebit.flags.ofrep/FetchStatus.Stopped.copy|copy(kotlin.Int){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // one.rarebit.flags.ofrep/FetchStatus.Stopped.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // one.rarebit.flags.ofrep/FetchStatus.Stopped.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // one.rarebit.flags.ofrep/FetchStatus.Stopped.toString|toString(){}[0]
+    }
+
+    final class Updated : one.rarebit.flags.ofrep/FetchStatus { // one.rarebit.flags.ofrep/FetchStatus.Updated|null[0]
+        constructor <init>(kotlin/Boolean, kotlin.collections/Set<kotlin/String>, kotlin/Boolean) // one.rarebit.flags.ofrep/FetchStatus.Updated.<init>|<init>(kotlin.Boolean;kotlin.collections.Set<kotlin.String>;kotlin.Boolean){}[0]
+
+        final val appliedLive // one.rarebit.flags.ofrep/FetchStatus.Updated.appliedLive|{}appliedLive[0]
+            final fun <get-appliedLive>(): kotlin.collections/Set<kotlin/String> // one.rarebit.flags.ofrep/FetchStatus.Updated.appliedLive.<get-appliedLive>|<get-appliedLive>(){}[0]
+        final val appliedNow // one.rarebit.flags.ofrep/FetchStatus.Updated.appliedNow|{}appliedNow[0]
+            final fun <get-appliedNow>(): kotlin/Boolean // one.rarebit.flags.ofrep/FetchStatus.Updated.appliedNow.<get-appliedNow>|<get-appliedNow>(){}[0]
+        final val saved // one.rarebit.flags.ofrep/FetchStatus.Updated.saved|{}saved[0]
+            final fun <get-saved>(): kotlin/Boolean // one.rarebit.flags.ofrep/FetchStatus.Updated.saved.<get-saved>|<get-saved>(){}[0]
+
+        final fun component1(): kotlin/Boolean // one.rarebit.flags.ofrep/FetchStatus.Updated.component1|component1(){}[0]
+        final fun component2(): kotlin.collections/Set<kotlin/String> // one.rarebit.flags.ofrep/FetchStatus.Updated.component2|component2(){}[0]
+        final fun component3(): kotlin/Boolean // one.rarebit.flags.ofrep/FetchStatus.Updated.component3|component3(){}[0]
+        final fun copy(kotlin/Boolean = ..., kotlin.collections/Set<kotlin/String> = ..., kotlin/Boolean = ...): one.rarebit.flags.ofrep/FetchStatus.Updated // one.rarebit.flags.ofrep/FetchStatus.Updated.copy|copy(kotlin.Boolean;kotlin.collections.Set<kotlin.String>;kotlin.Boolean){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // one.rarebit.flags.ofrep/FetchStatus.Updated.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // one.rarebit.flags.ofrep/FetchStatus.Updated.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // one.rarebit.flags.ofrep/FetchStatus.Updated.toString|toString(){}[0]
+    }
+
+    final object Idle : one.rarebit.flags.ofrep/FetchStatus { // one.rarebit.flags.ofrep/FetchStatus.Idle|null[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // one.rarebit.flags.ofrep/FetchStatus.Idle.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // one.rarebit.flags.ofrep/FetchStatus.Idle.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // one.rarebit.flags.ofrep/FetchStatus.Idle.toString|toString(){}[0]
+    }
+
+    final object NotModified : one.rarebit.flags.ofrep/FetchStatus { // one.rarebit.flags.ofrep/FetchStatus.NotModified|null[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // one.rarebit.flags.ofrep/FetchStatus.NotModified.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // one.rarebit.flags.ofrep/FetchStatus.NotModified.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // one.rarebit.flags.ofrep/FetchStatus.NotModified.toString|toString(){}[0]
+    }
+}
+
+sealed interface one.rarebit.flags.ofrep/RefreshOutcome { // one.rarebit.flags.ofrep/RefreshOutcome|null[0]
+    final class Completed : one.rarebit.flags.ofrep/RefreshOutcome { // one.rarebit.flags.ofrep/RefreshOutcome.Completed|null[0]
+        constructor <init>(one.rarebit.flags.ofrep/FetchStatus) // one.rarebit.flags.ofrep/RefreshOutcome.Completed.<init>|<init>(one.rarebit.flags.ofrep.FetchStatus){}[0]
+
+        final val status // one.rarebit.flags.ofrep/RefreshOutcome.Completed.status|{}status[0]
+            final fun <get-status>(): one.rarebit.flags.ofrep/FetchStatus // one.rarebit.flags.ofrep/RefreshOutcome.Completed.status.<get-status>|<get-status>(){}[0]
+
+        final fun component1(): one.rarebit.flags.ofrep/FetchStatus // one.rarebit.flags.ofrep/RefreshOutcome.Completed.component1|component1(){}[0]
+        final fun copy(one.rarebit.flags.ofrep/FetchStatus = ...): one.rarebit.flags.ofrep/RefreshOutcome.Completed // one.rarebit.flags.ofrep/RefreshOutcome.Completed.copy|copy(one.rarebit.flags.ofrep.FetchStatus){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // one.rarebit.flags.ofrep/RefreshOutcome.Completed.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // one.rarebit.flags.ofrep/RefreshOutcome.Completed.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // one.rarebit.flags.ofrep/RefreshOutcome.Completed.toString|toString(){}[0]
+    }
+
+    final object Discarded : one.rarebit.flags.ofrep/RefreshOutcome { // one.rarebit.flags.ofrep/RefreshOutcome.Discarded|null[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // one.rarebit.flags.ofrep/RefreshOutcome.Discarded.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // one.rarebit.flags.ofrep/RefreshOutcome.Discarded.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // one.rarebit.flags.ofrep/RefreshOutcome.Discarded.toString|toString(){}[0]
+    }
+
+    final object SkippedBackoff : one.rarebit.flags.ofrep/RefreshOutcome { // one.rarebit.flags.ofrep/RefreshOutcome.SkippedBackoff|null[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // one.rarebit.flags.ofrep/RefreshOutcome.SkippedBackoff.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // one.rarebit.flags.ofrep/RefreshOutcome.SkippedBackoff.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // one.rarebit.flags.ofrep/RefreshOutcome.SkippedBackoff.toString|toString(){}[0]
+    }
+
+    final object SkippedStopped : one.rarebit.flags.ofrep/RefreshOutcome { // one.rarebit.flags.ofrep/RefreshOutcome.SkippedStopped|null[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // one.rarebit.flags.ofrep/RefreshOutcome.SkippedStopped.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // one.rarebit.flags.ofrep/RefreshOutcome.SkippedStopped.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // one.rarebit.flags.ofrep/RefreshOutcome.SkippedStopped.toString|toString(){}[0]
+    }
+}
+
+final class one.rarebit.flags.ofrep/ApplyPolicy { // one.rarebit.flags.ofrep/ApplyPolicy|null[0]
+    constructor <init>(kotlin/Boolean = ..., kotlin/Boolean = ...) // one.rarebit.flags.ofrep/ApplyPolicy.<init>|<init>(kotlin.Boolean;kotlin.Boolean){}[0]
+
+    final val firstPayloadAppliesLive // one.rarebit.flags.ofrep/ApplyPolicy.firstPayloadAppliesLive|{}firstPayloadAppliesLive[0]
+        final fun <get-firstPayloadAppliesLive>(): kotlin/Boolean // one.rarebit.flags.ofrep/ApplyPolicy.firstPayloadAppliesLive.<get-firstPayloadAppliesLive>|<get-firstPayloadAppliesLive>(){}[0]
+    final val freshValuesAtNextLaunch // one.rarebit.flags.ofrep/ApplyPolicy.freshValuesAtNextLaunch|{}freshValuesAtNextLaunch[0]
+        final fun <get-freshValuesAtNextLaunch>(): kotlin/Boolean // one.rarebit.flags.ofrep/ApplyPolicy.freshValuesAtNextLaunch.<get-freshValuesAtNextLaunch>|<get-freshValuesAtNextLaunch>(){}[0]
+
+    final fun component1(): kotlin/Boolean // one.rarebit.flags.ofrep/ApplyPolicy.component1|component1(){}[0]
+    final fun component2(): kotlin/Boolean // one.rarebit.flags.ofrep/ApplyPolicy.component2|component2(){}[0]
+    final fun copy(kotlin/Boolean = ..., kotlin/Boolean = ...): one.rarebit.flags.ofrep/ApplyPolicy // one.rarebit.flags.ofrep/ApplyPolicy.copy|copy(kotlin.Boolean;kotlin.Boolean){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // one.rarebit.flags.ofrep/ApplyPolicy.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // one.rarebit.flags.ofrep/ApplyPolicy.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // one.rarebit.flags.ofrep/ApplyPolicy.toString|toString(){}[0]
+}
+
+final class one.rarebit.flags.ofrep/Backoff { // one.rarebit.flags.ofrep/Backoff|null[0]
+    constructor <init>(kotlin.time/Duration = ..., kotlin.time/Duration = ..., kotlin/Double = ..., kotlin.time/Duration = ..., kotlin.random/Random = ...) // one.rarebit.flags.ofrep/Backoff.<init>|<init>(kotlin.time.Duration;kotlin.time.Duration;kotlin.Double;kotlin.time.Duration;kotlin.random.Random){}[0]
+
+    final val initial // one.rarebit.flags.ofrep/Backoff.initial|{}initial[0]
+        final fun <get-initial>(): kotlin.time/Duration // one.rarebit.flags.ofrep/Backoff.initial.<get-initial>|<get-initial>(){}[0]
+    final val max // one.rarebit.flags.ofrep/Backoff.max|{}max[0]
+        final fun <get-max>(): kotlin.time/Duration // one.rarebit.flags.ofrep/Backoff.max.<get-max>|<get-max>(){}[0]
+    final val maxRetryAfter // one.rarebit.flags.ofrep/Backoff.maxRetryAfter|{}maxRetryAfter[0]
+        final fun <get-maxRetryAfter>(): kotlin.time/Duration // one.rarebit.flags.ofrep/Backoff.maxRetryAfter.<get-maxRetryAfter>|<get-maxRetryAfter>(){}[0]
+    final val multiplier // one.rarebit.flags.ofrep/Backoff.multiplier|{}multiplier[0]
+        final fun <get-multiplier>(): kotlin/Double // one.rarebit.flags.ofrep/Backoff.multiplier.<get-multiplier>|<get-multiplier>(){}[0]
+
+    final fun delay(kotlin/Int, kotlin.time/Duration? = ...): kotlin.time/Duration // one.rarebit.flags.ofrep/Backoff.delay|delay(kotlin.Int;kotlin.time.Duration?){}[0]
+
+    final object Companion { // one.rarebit.flags.ofrep/Backoff.Companion|null[0]
+        final fun parseRetryAfter(kotlin/String?, io.ktor.util.date/GMTDate = ...): kotlin.time/Duration? // one.rarebit.flags.ofrep/Backoff.Companion.parseRetryAfter|parseRetryAfter(kotlin.String?;io.ktor.util.date.GMTDate){}[0]
+    }
+}
+
+final class one.rarebit.flags.ofrep/ClientHeadersConfig { // one.rarebit.flags.ofrep/ClientHeadersConfig|null[0]
+    constructor <init>() // one.rarebit.flags.ofrep/ClientHeadersConfig.<init>|<init>(){}[0]
+
+    final var client // one.rarebit.flags.ofrep/ClientHeadersConfig.client|{}client[0]
+        final fun <get-client>(): kotlin/Function0<one.rarebit.flags.ofrep/ClientInfo?> // one.rarebit.flags.ofrep/ClientHeadersConfig.client.<get-client>|<get-client>(){}[0]
+        final fun <set-client>(kotlin/Function0<one.rarebit.flags.ofrep/ClientInfo?>) // one.rarebit.flags.ofrep/ClientHeadersConfig.client.<set-client>|<set-client>(kotlin.Function0<one.rarebit.flags.ofrep.ClientInfo?>){}[0]
+
+    final fun client(one.rarebit.flags.ofrep/ClientInfo) // one.rarebit.flags.ofrep/ClientHeadersConfig.client|client(one.rarebit.flags.ofrep.ClientInfo){}[0]
+}
+
+final class one.rarebit.flags.ofrep/ClientInfo { // one.rarebit.flags.ofrep/ClientInfo|null[0]
+    constructor <init>(kotlin/String, kotlin/String? = ..., kotlin/Long? = ...) // one.rarebit.flags.ofrep/ClientInfo.<init>|<init>(kotlin.String;kotlin.String?;kotlin.Long?){}[0]
+
+    final val build // one.rarebit.flags.ofrep/ClientInfo.build|{}build[0]
+        final fun <get-build>(): kotlin/Long? // one.rarebit.flags.ofrep/ClientInfo.build.<get-build>|<get-build>(){}[0]
+    final val fingerprint // one.rarebit.flags.ofrep/ClientInfo.fingerprint|{}fingerprint[0]
+        final fun <get-fingerprint>(): kotlin/String // one.rarebit.flags.ofrep/ClientInfo.fingerprint.<get-fingerprint>|<get-fingerprint>(){}[0]
+    final val isRecognised // one.rarebit.flags.ofrep/ClientInfo.isRecognised|{}isRecognised[0]
+        final fun <get-isRecognised>(): kotlin/Boolean // one.rarebit.flags.ofrep/ClientInfo.isRecognised.<get-isRecognised>|<get-isRecognised>(){}[0]
+    final val platform // one.rarebit.flags.ofrep/ClientInfo.platform|{}platform[0]
+        final fun <get-platform>(): kotlin/String // one.rarebit.flags.ofrep/ClientInfo.platform.<get-platform>|<get-platform>(){}[0]
+    final val version // one.rarebit.flags.ofrep/ClientInfo.version|{}version[0]
+        final fun <get-version>(): kotlin/String? // one.rarebit.flags.ofrep/ClientInfo.version.<get-version>|<get-version>(){}[0]
+
+    final fun applyTo(io.ktor.http/HeadersBuilder) // one.rarebit.flags.ofrep/ClientInfo.applyTo|applyTo(io.ktor.http.HeadersBuilder){}[0]
+    final fun component1(): kotlin/String // one.rarebit.flags.ofrep/ClientInfo.component1|component1(){}[0]
+    final fun component2(): kotlin/String? // one.rarebit.flags.ofrep/ClientInfo.component2|component2(){}[0]
+    final fun component3(): kotlin/Long? // one.rarebit.flags.ofrep/ClientInfo.component3|component3(){}[0]
+    final fun copy(kotlin/String = ..., kotlin/String? = ..., kotlin/Long? = ...): one.rarebit.flags.ofrep/ClientInfo // one.rarebit.flags.ofrep/ClientInfo.copy|copy(kotlin.String;kotlin.String?;kotlin.Long?){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // one.rarebit.flags.ofrep/ClientInfo.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // one.rarebit.flags.ofrep/ClientInfo.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // one.rarebit.flags.ofrep/ClientInfo.toString|toString(){}[0]
+
+    final object Companion { // one.rarebit.flags.ofrep/ClientInfo.Companion|null[0]
+        final const val HEADER_BUILD // one.rarebit.flags.ofrep/ClientInfo.Companion.HEADER_BUILD|{}HEADER_BUILD[0]
+            final fun <get-HEADER_BUILD>(): kotlin/String // one.rarebit.flags.ofrep/ClientInfo.Companion.HEADER_BUILD.<get-HEADER_BUILD>|<get-HEADER_BUILD>(){}[0]
+        final const val HEADER_PLATFORM // one.rarebit.flags.ofrep/ClientInfo.Companion.HEADER_PLATFORM|{}HEADER_PLATFORM[0]
+            final fun <get-HEADER_PLATFORM>(): kotlin/String // one.rarebit.flags.ofrep/ClientInfo.Companion.HEADER_PLATFORM.<get-HEADER_PLATFORM>|<get-HEADER_PLATFORM>(){}[0]
+        final const val HEADER_VERSION // one.rarebit.flags.ofrep/ClientInfo.Companion.HEADER_VERSION|{}HEADER_VERSION[0]
+            final fun <get-HEADER_VERSION>(): kotlin/String // one.rarebit.flags.ofrep/ClientInfo.Companion.HEADER_VERSION.<get-HEADER_VERSION>|<get-HEADER_VERSION>(){}[0]
+
+        final val KNOWN_PLATFORMS // one.rarebit.flags.ofrep/ClientInfo.Companion.KNOWN_PLATFORMS|{}KNOWN_PLATFORMS[0]
+            final fun <get-KNOWN_PLATFORMS>(): kotlin.collections/Set<kotlin/String> // one.rarebit.flags.ofrep/ClientInfo.Companion.KNOWN_PLATFORMS.<get-KNOWN_PLATFORMS>|<get-KNOWN_PLATFORMS>(){}[0]
+    }
+}
+
+final class one.rarebit.flags.ofrep/OfrepClient : one.rarebit.flags.ofrep/FlagsFetcher { // one.rarebit.flags.ofrep/OfrepClient|null[0]
+    constructor <init>(io.ktor.client/HttpClient, kotlin/String, one.rarebit.flags.ofrep/ClientInfo?, kotlin/Function0<kotlin/String?> = ..., kotlin/Function0<kotlin.collections/Map<kotlin/String, kotlin/String>> = ...) // one.rarebit.flags.ofrep/OfrepClient.<init>|<init>(io.ktor.client.HttpClient;kotlin.String;one.rarebit.flags.ofrep.ClientInfo?;kotlin.Function0<kotlin.String?>;kotlin.Function0<kotlin.collections.Map<kotlin.String,kotlin.String>>){}[0]
+
+    final val client // one.rarebit.flags.ofrep/OfrepClient.client|{}client[0]
+        final fun <get-client>(): one.rarebit.flags.ofrep/ClientInfo? // one.rarebit.flags.ofrep/OfrepClient.client.<get-client>|<get-client>(){}[0]
+
+    final suspend fun fetch(kotlin/String?, kotlin/Int): one.rarebit.flags.ofrep/FetchResult // one.rarebit.flags.ofrep/OfrepClient.fetch|fetch(kotlin.String?;kotlin.Int){}[0]
+}
+
+final class one.rarebit.flags.ofrep/StandardFlagsClient { // one.rarebit.flags.ofrep/StandardFlagsClient|null[0]
+    constructor <init>(one.rarebit.flags.ofrep/FlagsFetcher, kotlin.collections/Collection<one.rarebit.flags.core/FlagDefinition<*>> = ..., one.rarebit.flags.core/LastGoodStore = ..., one.rarebit.flags.ofrep/ApplyPolicy = ..., one.rarebit.flags.ofrep/Backoff = ..., one.rarebit.flags.core/PayloadLimits = ..., kotlin.time/TimeSource = ..., kotlin/String? = ...) // one.rarebit.flags.ofrep/StandardFlagsClient.<init>|<init>(one.rarebit.flags.ofrep.FlagsFetcher;kotlin.collections.Collection<one.rarebit.flags.core.FlagDefinition<*>>;one.rarebit.flags.core.LastGoodStore;one.rarebit.flags.ofrep.ApplyPolicy;one.rarebit.flags.ofrep.Backoff;one.rarebit.flags.core.PayloadLimits;kotlin.time.TimeSource;kotlin.String?){}[0]
+
+    final val payload // one.rarebit.flags.ofrep/StandardFlagsClient.payload|{}payload[0]
+        final fun <get-payload>(): kotlinx.coroutines.flow/StateFlow<one.rarebit.flags.core/FlagPayload?> // one.rarebit.flags.ofrep/StandardFlagsClient.payload.<get-payload>|<get-payload>(){}[0]
+    final val pending // one.rarebit.flags.ofrep/StandardFlagsClient.pending|{}pending[0]
+        final fun <get-pending>(): kotlinx.coroutines.flow/StateFlow<one.rarebit.flags.core/FlagPayload?> // one.rarebit.flags.ofrep/StandardFlagsClient.pending.<get-pending>|<get-pending>(){}[0]
+    final val status // one.rarebit.flags.ofrep/StandardFlagsClient.status|{}status[0]
+        final fun <get-status>(): kotlinx.coroutines.flow/StateFlow<one.rarebit.flags.ofrep/FetchStatus> // one.rarebit.flags.ofrep/StandardFlagsClient.status.<get-status>|<get-status>(){}[0]
+    final val storeError // one.rarebit.flags.ofrep/StandardFlagsClient.storeError|{}storeError[0]
+        final fun <get-storeError>(): kotlinx.coroutines.flow/StateFlow<one.rarebit.flags.ofrep/StoreError?> // one.rarebit.flags.ofrep/StandardFlagsClient.storeError.<get-storeError>|<get-storeError>(){}[0]
+
+    final fun <#A1: kotlin/Any> read(one.rarebit.flags.core/FlagDefinition<#A1>): one.rarebit.flags.core/FlagRead<#A1> // one.rarebit.flags.ofrep/StandardFlagsClient.read|read(one.rarebit.flags.core.FlagDefinition<0:0>){0§<kotlin.Any>}[0]
+    final fun <#A1: kotlin/Any> value(one.rarebit.flags.core/FlagDefinition<#A1>): #A1 // one.rarebit.flags.ofrep/StandardFlagsClient.value|value(one.rarebit.flags.core.FlagDefinition<0:0>){0§<kotlin.Any>}[0]
+    final fun definition(kotlin/String): one.rarebit.flags.core/FlagDefinition<*>? // one.rarebit.flags.ofrep/StandardFlagsClient.definition|definition(kotlin.String){}[0]
+    final fun state(one.rarebit.flags.core/BooleanFlag): one.rarebit.flags.core/FlagState // one.rarebit.flags.ofrep/StandardFlagsClient.state|state(one.rarebit.flags.core.BooleanFlag){}[0]
+    final suspend fun load() // one.rarebit.flags.ofrep/StandardFlagsClient.load|load(){}[0]
+    final suspend fun refresh(): one.rarebit.flags.ofrep/RefreshOutcome // one.rarebit.flags.ofrep/StandardFlagsClient.refresh|refresh(){}[0]
+    final suspend fun seed(kotlin/String): one.rarebit.flags.core/PayloadResult // one.rarebit.flags.ofrep/StandardFlagsClient.seed|seed(kotlin.String){}[0]
+    final suspend fun setContext(kotlin/String?) // one.rarebit.flags.ofrep/StandardFlagsClient.setContext|setContext(kotlin.String?){}[0]
+
+    final object Companion { // one.rarebit.flags.ofrep/StandardFlagsClient.Companion|null[0]
+        final fun normalizeContextKey(kotlin/String?): kotlin/String? // one.rarebit.flags.ofrep/StandardFlagsClient.Companion.normalizeContextKey|normalizeContextKey(kotlin.String?){}[0]
+    }
+}
+
+final class one.rarebit.flags.ofrep/StoreError { // one.rarebit.flags.ofrep/StoreError|null[0]
+    constructor <init>(one.rarebit.flags.ofrep/StoreOperation, kotlin/Throwable) // one.rarebit.flags.ofrep/StoreError.<init>|<init>(one.rarebit.flags.ofrep.StoreOperation;kotlin.Throwable){}[0]
+
+    final val cause // one.rarebit.flags.ofrep/StoreError.cause|{}cause[0]
+        final fun <get-cause>(): kotlin/Throwable // one.rarebit.flags.ofrep/StoreError.cause.<get-cause>|<get-cause>(){}[0]
+    final val operation // one.rarebit.flags.ofrep/StoreError.operation|{}operation[0]
+        final fun <get-operation>(): one.rarebit.flags.ofrep/StoreOperation // one.rarebit.flags.ofrep/StoreError.operation.<get-operation>|<get-operation>(){}[0]
+
+    final fun component1(): one.rarebit.flags.ofrep/StoreOperation // one.rarebit.flags.ofrep/StoreError.component1|component1(){}[0]
+    final fun component2(): kotlin/Throwable // one.rarebit.flags.ofrep/StoreError.component2|component2(){}[0]
+    final fun copy(one.rarebit.flags.ofrep/StoreOperation = ..., kotlin/Throwable = ...): one.rarebit.flags.ofrep/StoreError // one.rarebit.flags.ofrep/StoreError.copy|copy(one.rarebit.flags.ofrep.StoreOperation;kotlin.Throwable){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // one.rarebit.flags.ofrep/StoreError.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // one.rarebit.flags.ofrep/StoreError.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // one.rarebit.flags.ofrep/StoreError.toString|toString(){}[0]
+}
+
+final val one.rarebit.flags.ofrep/ClientHeaders // one.rarebit.flags.ofrep/ClientHeaders|{}ClientHeaders[0]
+    final fun <get-ClientHeaders>(): io.ktor.client.plugins.api/ClientPlugin<one.rarebit.flags.ofrep/ClientHeadersConfig> // one.rarebit.flags.ofrep/ClientHeaders.<get-ClientHeaders>|<get-ClientHeaders>(){}[0]
+
+final suspend fun (io.ktor.client.statement/HttpResponse).one.rarebit.flags.ofrep/readBounded(kotlin/Int): kotlin/ByteArray? // one.rarebit.flags.ofrep/readBounded|readBounded@io.ktor.client.statement.HttpResponse(kotlin.Int){}[0]

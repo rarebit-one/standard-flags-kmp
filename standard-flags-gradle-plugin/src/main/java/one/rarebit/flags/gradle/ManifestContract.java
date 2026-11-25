@@ -53,11 +53,14 @@ public final class ManifestContract {
         public final String source;
         /** For a deprecated wire: the date it stops being served. Null for a live flag. */
         public final String until;
+        /** The values a string wire can carry, as the manifest lists them; empty when it lists none. */
+        public final List<String> values;
 
-        Exposure(Type type, String source, String until) {
+        Exposure(Type type, String source, String until, List<String> values) {
             this.type = type;
             this.source = source;
             this.until = until;
+            this.values = Collections.unmodifiableList(values);
         }
 
         public boolean deprecated() {
@@ -111,7 +114,9 @@ public final class ManifestContract {
         Map<?, ?> manifest = (Map<?, ?>) document;
         Object version = manifest.get("version");
         if (!(version instanceof Number)) throw new IllegalArgumentException("the manifest has no version");
-        int v = ((Number) version).intValue();
+        double raw = ((Number) version).doubleValue();
+        if (raw != Math.rint(raw)) throw new IllegalArgumentException("manifest version " + version + " is not a whole number");
+        int v = (int) raw;
         if (v != 1 && v != 2) {
             throw new IllegalArgumentException("manifest version " + v + " is newer than this check understands; upgrade the plugin");
         }
@@ -124,24 +129,28 @@ public final class ManifestContract {
             }
         }
         for (Map<?, ?> flag : objects(manifest.get("flags"), "flags")) {
-            String key = String.valueOf(flag.get("key"));
+            String key = key(flag, "flag");
             Type type = Type.parse(flag.get("type"), "flag " + key);
+            List<String> values = type == Type.STRING ? names(flag.get("values")) : Collections.emptyList();
             for (Map.Entry<String, List<String>> exposure : wires(flag, v).entrySet()) {
                 Map<String, Exposure> wires = audiences.computeIfAbsent(exposure.getKey(), k -> new TreeMap<>());
-                for (String wire : exposure.getValue()) wires.put(wire, new Exposure(type, key, null));
+                for (String wire : exposure.getValue()) wires.put(wire, new Exposure(type, key, null, values));
             }
         }
         for (Map<?, ?> tombstone : objects(manifest.get("tombstones"), "tombstones")) {
             Object serve = tombstone.get("serve");
             if (!(serve instanceof Map)) continue;
-            String key = String.valueOf(tombstone.get("key"));
+            String key = key(tombstone, "tombstone");
             String until = tombstone.get("until") == null ? "an unknown date" : String.valueOf(tombstone.get("until"));
             for (Map.Entry<?, ?> audience : ((Map<?, ?>) serve).entrySet()) {
                 if (!(audience.getValue() instanceof Map)) continue;
                 Map<String, Exposure> wires = audiences.computeIfAbsent(String.valueOf(audience.getKey()), k -> new TreeMap<>());
                 for (Map.Entry<?, ?> wire : ((Map<?, ?>) audience.getValue()).entrySet()) {
                     Type type = wire.getValue() instanceof Boolean ? Type.BOOLEAN : Type.STRING;
-                    wires.putIfAbsent(String.valueOf(wire.getKey()), new Exposure(type, key, until));
+                    List<String> values = type == Type.STRING
+                        ? Collections.singletonList(String.valueOf(wire.getValue()))
+                        : Collections.<String>emptyList();
+                    wires.putIfAbsent(String.valueOf(wire.getKey()), new Exposure(type, key, until, values));
                 }
             }
         }
@@ -150,6 +159,16 @@ public final class ManifestContract {
 
     /** Checks the wires an app reads ({@code wire → type}) against {@code audience}. */
     public Result check(String audience, Map<String, Type> reads) {
+        return check(audience, reads, Collections.<String, java.util.Set<String>>emptyMap());
+    }
+
+    /**
+     * Checks the wires an app reads against {@code audience}. {@code values}
+     * holds, for string wires, the values the app understands: a value the
+     * server can send that isn't among them fails (the app would read its code
+     * default), and one the server never sends is a warning.
+     */
+    public Result check(String audience, Map<String, Type> reads, Map<String, java.util.Set<String>> values) {
         List<String> errors = new ArrayList<>();
         List<String> warnings = new ArrayList<>();
         if (!audiences.containsKey(audience)) {
@@ -169,12 +188,36 @@ public final class ManifestContract {
                     + (elsewhere.isEmpty() ? "" : " (only to " + elsewhere + ")"));
             } else if (exposure.type != read.getValue()) {
                 errors.add("wire \"" + wire + "\" is a " + exposure.type + " on the server, but the app reads a " + read.getValue());
-            } else if (exposure.deprecated()) {
-                warnings.add("wire \"" + wire + "\" is deprecated (tombstone " + exposure.source
-                    + "): the server serves a static value until " + exposure.until + ", then stops");
+            } else {
+                java.util.Set<String> understood = values.get(wire);
+                if (understood != null && exposure.type == Type.STRING && !exposure.values.isEmpty()) {
+                    List<String> unknown = new ArrayList<>();
+                    for (String value : exposure.values) if (!understood.contains(value)) unknown.add(value);
+                    if (!unknown.isEmpty()) {
+                        errors.add("wire \"" + wire + "\" can carry " + unknown + ", which the app doesn't declare"
+                            + " (it would read its code default)");
+                    }
+                    java.util.Set<String> unused = new TreeSet<>(understood);
+                    unused.removeAll(exposure.values);
+                    if (!unused.isEmpty()) {
+                        warnings.add("wire \"" + wire + "\": the server never sends " + unused + ", which the app declares");
+                    }
+                }
+                if (exposure.deprecated()) {
+                    warnings.add("wire \"" + wire + "\" is deprecated (tombstone " + exposure.source
+                        + "): the server serves a static value until " + exposure.until + ", then stops");
+                }
             }
         }
         return new Result(errors, warnings);
+    }
+
+    private static String key(Map<?, ?> entry, String what) {
+        Object key = entry.get("key");
+        if (!(key instanceof String) || ((String) key).isEmpty()) {
+            throw new IllegalArgumentException("a " + what + " in the manifest has no key");
+        }
+        return (String) key;
     }
 
     private static List<Map<?, ?>> objects(Object value, String where) {

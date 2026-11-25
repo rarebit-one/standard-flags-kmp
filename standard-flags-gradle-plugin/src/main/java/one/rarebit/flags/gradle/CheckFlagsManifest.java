@@ -19,7 +19,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 /** Checks the wires the app reads against the server's committed manifest. */
@@ -34,6 +37,9 @@ public abstract class CheckFlagsManifest extends DefaultTask {
 
     @Input
     public abstract MapProperty<String, String> getWires();
+
+    @Input
+    public abstract MapProperty<String, List<String>> getValues();
 
     @InputFile
     @Optional
@@ -58,20 +64,41 @@ public abstract class CheckFlagsManifest extends DefaultTask {
         }
 
         Map<String, ManifestContract.Type> reads = new TreeMap<>();
+        Map<String, Set<String>> values = new TreeMap<>();
         for (Map.Entry<String, String> wire : getWires().get().entrySet()) {
             reads.put(wire.getKey(), type(wire.getValue(), wire.getKey()));
         }
+        for (Map.Entry<String, List<String>> wire : getValues().get().entrySet()) {
+            values.put(wire.getKey(), new LinkedHashSet<>(wire.getValue()));
+        }
         if (getWiresFile().isPresent()) {
             File file = getWiresFile().get().getAsFile();
-            Object document = new JsonSlurper().parseText(read(file));
+            Object document;
+            try {
+                document = new JsonSlurper().parseText(read(file));
+            } catch (groovy.json.JsonException e) {
+                throw new GradleException("standardFlags: can't read " + file + ": " + e.getMessage(), e);
+            }
             if (!(document instanceof Map)) throw new GradleException("standardFlags: " + file + " is not a JSON object");
             for (Map.Entry<?, ?> wire : ((Map<?, ?>) document).entrySet()) {
-                reads.put(String.valueOf(wire.getKey()), type(wire.getValue(), String.valueOf(wire.getKey())));
+                String name = String.valueOf(wire.getKey());
+                Object declaration = wire.getValue();
+                if (declaration instanceof Map) {
+                    Map<?, ?> fields = (Map<?, ?>) declaration;
+                    reads.put(name, type(fields.get("type"), name));
+                    if (fields.get("values") instanceof List) {
+                        Set<String> understood = new LinkedHashSet<>();
+                        for (Object value : (List<?>) fields.get("values")) understood.add(String.valueOf(value));
+                        values.put(name, understood);
+                    }
+                } else {
+                    reads.put(name, type(declaration, name));
+                }
             }
         }
         if (reads.isEmpty()) throw new GradleException("standardFlags: no wires declared; add wire(...) or wiresFile");
 
-        ManifestContract.Result result = contract.check(getAudience().get(), reads);
+        ManifestContract.Result result = contract.check(getAudience().get(), reads, values);
         boolean failDeprecated = getFailOnDeprecated().get();
         StringBuilder report = new StringBuilder();
         for (String warning : result.warnings) {

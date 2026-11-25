@@ -9,12 +9,19 @@ import dev.openfeature.kotlin.sdk.Reason
 import dev.openfeature.kotlin.sdk.Value
 import dev.openfeature.kotlin.sdk.events.OpenFeatureProviderEvents
 import dev.openfeature.kotlin.sdk.exceptions.ErrorCode
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.drop
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.runningFold
 import kotlinx.coroutines.withTimeoutOrNull
 import one.rarebit.flags.core.BooleanFlag
 import one.rarebit.flags.core.FallbackCause
+import one.rarebit.flags.core.FlagPayload
 import one.rarebit.flags.core.FlagRead
 import one.rarebit.flags.core.StringFlag
 import one.rarebit.flags.ofrep.StandardFlagsClient
@@ -30,19 +37,27 @@ import kotlin.time.Duration.Companion.seconds
  * val chat = OpenFeatureAPI.getClient().getBooleanValue("chat_enabled", false)
  * ```
  *
- * Reads go through the client's declarations, so ceilings and allowed values
- * hold. A key the client doesn't declare reads as a plain boolean or string
- * with the caller's default. The caller's default is the code default.
+ * Reads go through the client's declarations, so allowed values hold, and a
+ * ceiling flag is always capped by its declared default, whatever default the
+ * caller passes. Otherwise the caller's default is the code default. A key the
+ * client doesn't declare reads as a plain boolean or string.
+ *
+ * The targeting key is the client's context key: the provider passes it to
+ * [StandardFlagsClient.setContext] before the first load, so both share one
+ * cache key and the stored payload for that key loads at start-up.
  *
  * Apps that bind their own seams to core don't need this module.
  *
- * @param initialFetchTimeout how long [initialize] waits for the first fetch
- *   before reporting ready with the cached values (or code defaults).
+ * @param initialFetchTimeout how long [initialize] and [onContextSet] wait for
+ *   a fetch before reporting ready with the cached values (or code defaults).
+ *   The fetch itself carries on in [scope] and applies when it lands.
+ * @param scope where those fetches run; [shutdown] cancels it.
  */
 public class StandardFlagsProvider(
     private val flags: StandardFlagsClient,
     private val initialFetchTimeout: Duration = 5.seconds,
     override val hooks: List<Hook<*>> = emptyList(),
+    private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
 ) : FeatureProvider {
 
     override val metadata: ProviderMetadata = object : ProviderMetadata {
@@ -50,22 +65,37 @@ public class StandardFlagsProvider(
     }
 
     override suspend fun initialize(initialContext: EvaluationContext?) {
+        // Adopt the key before loading, so the payload saved for it is the launch value.
+        initialContext?.let { flags.setContext(it.getTargetingKey()) }
         flags.load()
-        initialContext?.let { flags.setContext(contextKey(it)) }
-        withTimeoutOrNull(initialFetchTimeout) { flags.refresh() }
+        fetchAndWait()
     }
 
     override suspend fun onContextSet(oldContext: EvaluationContext?, newContext: EvaluationContext) {
-        flags.setContext(contextKey(newContext))
-        withTimeoutOrNull(initialFetchTimeout) { flags.refresh() }
+        flags.setContext(newContext.getTargetingKey())
+        fetchAndWait()
     }
 
-    override fun shutdown() {}
+    override fun shutdown() {
+        scope.cancel()
+    }
+
+    /** Starts a refresh in [scope] and waits up to [initialFetchTimeout]; a slow fetch still completes. */
+    private suspend fun fetchAndWait() {
+        val fetch = scope.async { flags.refresh() }
+        withTimeoutOrNull(initialFetchTimeout) { fetch.await() }
+    }
 
     override fun getBooleanEvaluation(key: String, defaultValue: Boolean, context: EvaluationContext?): ProviderEvaluation<Boolean> {
         val declared = flags.definition(key) as? BooleanFlag
         if (flags.definition(key) != null && declared == null) return mismatch(key, defaultValue)
-        return evaluate(key, flags.read(declared?.copy(default = defaultValue) ?: BooleanFlag(key, defaultValue)))
+        val definition = when {
+            declared == null -> BooleanFlag(key, defaultValue)
+            // A ceiling is the declared default; a caller can't raise it.
+            declared.ceiling -> declared
+            else -> declared.copy(default = defaultValue)
+        }
+        return evaluate(key, flags.read(definition))
     }
 
     override fun getStringEvaluation(key: String, defaultValue: String, context: EvaluationContext?): ProviderEvaluation<String> {
@@ -87,12 +117,25 @@ public class StandardFlagsProvider(
     override fun getObjectEvaluation(key: String, defaultValue: Value, context: EvaluationContext?): ProviderEvaluation<Value> =
         mismatch(key, defaultValue)
 
-    /** A configuration-changed event whenever the values code reads change (a live kill switch, a new context). */
-    override fun observe(): Flow<OpenFeatureProviderEvents> = flags.payload.drop(1).map {
-        OpenFeatureProviderEvents.ProviderConfigurationChanged(
-            OpenFeatureProviderEvents.EventDetails(flagsChanged = it?.entries?.keys.orEmpty()),
-        )
-    }
+    /**
+     * A configuration-changed event whenever the values code reads change (a
+     * live kill switch, the first payload, a new context), naming the wires
+     * whose entries changed.
+     */
+    override fun observe(): Flow<OpenFeatureProviderEvents> = flags.payload
+        .runningFold(null as Pair<FlagPayload?, FlagPayload?>?) { previous, next -> previous?.second to next }
+        .drop(2)
+        .mapNotNull { pair ->
+            val (before, after) = pair ?: return@mapNotNull null
+            val old = before?.entries.orEmpty()
+            val new = after?.entries.orEmpty()
+            val changed = (old.keys + new.keys).filter { old[it] != new[it] }.sorted().toSet()
+            if (changed.isEmpty()) {
+                null
+            } else {
+                OpenFeatureProviderEvents.ProviderConfigurationChanged(OpenFeatureProviderEvents.EventDetails(flagsChanged = changed))
+            }
+        }
 
     private fun <T : Any> evaluate(key: String, read: FlagRead<T>): ProviderEvaluation<T> {
         if (read.loaded) return ProviderEvaluation(read.value, read.variant, read.reason ?: Reason.UNKNOWN.name)
@@ -122,8 +165,6 @@ public class StandardFlagsProvider(
         "TYPE_MISMATCH" -> ErrorCode.TYPE_MISMATCH
         else -> ErrorCode.GENERAL
     }
-
-    private fun contextKey(context: EvaluationContext): String? = context.getTargetingKey().ifEmpty { null }
 
     public companion object {
         public const val NAME: String = "standard_flags"

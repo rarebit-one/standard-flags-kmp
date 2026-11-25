@@ -1,0 +1,32 @@
+// Klib ABI Dump
+// Targets: [iosArm64, iosSimulatorArm64]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <standard-flags-kmp:standard-flags-openfeature>
+final class one.rarebit.flags.openfeature/StandardFlagsProvider : dev.openfeature.kotlin.sdk/FeatureProvider { // one.rarebit.flags.openfeature/StandardFlagsProvider|null[0]
+    constructor <init>(one.rarebit.flags.ofrep/StandardFlagsClient, kotlin.time/Duration = ..., kotlin.collections/List<dev.openfeature.kotlin.sdk/Hook<*>> = ..., kotlinx.coroutines/CoroutineScope = ...) // one.rarebit.flags.openfeature/StandardFlagsProvider.<init>|<init>(one.rarebit.flags.ofrep.StandardFlagsClient;kotlin.time.Duration;kotlin.collections.List<dev.openfeature.kotlin.sdk.Hook<*>>;kotlinx.coroutines.CoroutineScope){}[0]
+
+    final val hooks // one.rarebit.flags.openfeature/StandardFlagsProvider.hooks|{}hooks[0]
+        final fun <get-hooks>(): kotlin.collections/List<dev.openfeature.kotlin.sdk/Hook<*>> // one.rarebit.flags.openfeature/StandardFlagsProvider.hooks.<get-hooks>|<get-hooks>(){}[0]
+    final val metadata // one.rarebit.flags.openfeature/StandardFlagsProvider.metadata|{}metadata[0]
+        final fun <get-metadata>(): dev.openfeature.kotlin.sdk/ProviderMetadata // one.rarebit.flags.openfeature/StandardFlagsProvider.metadata.<get-metadata>|<get-metadata>(){}[0]
+
+    final fun getBooleanEvaluation(kotlin/String, kotlin/Boolean, dev.openfeature.kotlin.sdk/EvaluationContext?): dev.openfeature.kotlin.sdk/ProviderEvaluation<kotlin/Boolean> // one.rarebit.flags.openfeature/StandardFlagsProvider.getBooleanEvaluation|getBooleanEvaluation(kotlin.String;kotlin.Boolean;dev.openfeature.kotlin.sdk.EvaluationContext?){}[0]
+    final fun getDoubleEvaluation(kotlin/String, kotlin/Double, dev.openfeature.kotlin.sdk/EvaluationContext?): dev.openfeature.kotlin.sdk/ProviderEvaluation<kotlin/Double> // one.rarebit.flags.openfeature/StandardFlagsProvider.getDoubleEvaluation|getDoubleEvaluation(kotlin.String;kotlin.Double;dev.openfeature.kotlin.sdk.EvaluationContext?){}[0]
+    final fun getIntegerEvaluation(kotlin/String, kotlin/Int, dev.openfeature.kotlin.sdk/EvaluationContext?): dev.openfeature.kotlin.sdk/ProviderEvaluation<kotlin/Int> // one.rarebit.flags.openfeature/StandardFlagsProvider.getIntegerEvaluation|getIntegerEvaluation(kotlin.String;kotlin.Int;dev.openfeature.kotlin.sdk.EvaluationContext?){}[0]
+    final fun getLongEvaluation(kotlin/String, kotlin/Long, dev.openfeature.kotlin.sdk/EvaluationContext?): dev.openfeature.kotlin.sdk/ProviderEvaluation<kotlin/Long> // one.rarebit.flags.openfeature/StandardFlagsProvider.getLongEvaluation|getLongEvaluation(kotlin.String;kotlin.Long;dev.openfeature.kotlin.sdk.EvaluationContext?){}[0]
+    final fun getObjectEvaluation(kotlin/String, dev.openfeature.kotlin.sdk/Value, dev.openfeature.kotlin.sdk/EvaluationContext?): dev.openfeature.kotlin.sdk/ProviderEvaluation<dev.openfeature.kotlin.sdk/Value> // one.rarebit.flags.openfeature/StandardFlagsProvider.getObjectEvaluation|getObjectEvaluation(kotlin.String;dev.openfeature.kotlin.sdk.Value;dev.openfeature.kotlin.sdk.EvaluationContext?){}[0]
+    final fun getStringEvaluation(kotlin/String, kotlin/String, dev.openfeature.kotlin.sdk/EvaluationContext?): dev.openfeature.kotlin.sdk/ProviderEvaluation<kotlin/String> // one.rarebit.flags.openfeature/StandardFlagsProvider.getStringEvaluation|getStringEvaluation(kotlin.String;kotlin.String;dev.openfeature.kotlin.sdk.EvaluationContext?){}[0]
+    final fun observe(): kotlinx.coroutines.flow/Flow<dev.openfeature.kotlin.sdk.events/OpenFeatureProviderEvents> // one.rarebit.flags.openfeature/StandardFlagsProvider.observe|observe(){}[0]
+    final fun shutdown() // one.rarebit.flags.openfeature/StandardFlagsProvider.shutdown|shutdown(){}[0]
+    final suspend fun initialize(dev.openfeature.kotlin.sdk/EvaluationContext?) // one.rarebit.flags.openfeature/StandardFlagsProvider.initialize|initialize(dev.openfeature.kotlin.sdk.EvaluationContext?){}[0]
+    final suspend fun onContextSet(dev.openfeature.kotlin.sdk/EvaluationContext?, dev.openfeature.kotlin.sdk/EvaluationContext) // one.rarebit.flags.openfeature/StandardFlagsProvider.onContextSet|onContextSet(dev.openfeature.kotlin.sdk.EvaluationContext?;dev.openfeature.kotlin.sdk.EvaluationContext){}[0]
+
+    final object Companion { // one.rarebit.flags.openfeature/StandardFlagsProvider.Companion|null[0]
+        final const val NAME // one.rarebit.flags.openfeature/StandardFlagsProvider.Companion.NAME|{}NAME[0]
+            final fun <get-NAME>(): kotlin/String // one.rarebit.flags.openfeature/StandardFlagsProvider.Companion.NAME.<get-NAME>|<get-NAME>(){}[0]
+    }
+}

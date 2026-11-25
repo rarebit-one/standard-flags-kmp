@@ -1,12 +1,17 @@
 package one.rarebit.flags.status
 
+import kotlinx.coroutines.DelicateCoroutinesApi
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
 import io.ktor.client.request.HttpRequestData
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
+import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.headersOf
+import io.ktor.utils.io.writer
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.test.runTest
 import one.rarebit.flags.ofrep.ClientInfo
 import kotlin.test.Test
@@ -14,19 +19,25 @@ import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertNull
 
+@OptIn(DelicateCoroutinesApi::class)
 class ClientStatusTest {
     private val requests = mutableListOf<HttpRequestData>()
 
     @Test
     fun parsesEveryStatus() {
         val recommended = ClientStatusParser.parse(
-            """{"status":"upgrade_recommended","platform":"android","version":"0.4.0","min_version":"0.4.0","recommended":"0.5.0","enforce_at":"2026-12-08T00:00:00Z","store_url":"https://store.example/app","extra":1}""",
+            """{"status":"upgrade_recommended","platform":"android","version":"0.4.0","min_version":"0.4.0","recommended":"0.5.0","enforce_at":"2026-12-08","store_url":"https://store.example/app","extra":1}""",
         )
         val upgrade = assertIs<ClientStatus.UpgradeRecommended>(recommended)
-        assertEquals("2026-12-08T00:00:00Z", upgrade.enforceAt)
+        assertEquals("2026-12-08", upgrade.enforceAt)
         assertEquals("0.5.0", upgrade.details.recommended)
         assertEquals("https://store.example/app", upgrade.details.storeUrl)
 
+        val timestamp = assertIs<ClientStatus.UpgradeRecommended>(ClientStatusParser.parse("""{"status":"upgrade_recommended","enforce_at":"2026-12-08T00:00:00Z"}"""))
+        assertNull(timestamp.enforceAt, "enforce_at is a date, so anything else is ignored")
+        assertNull(timestamp.details.enforceAt)
+        val required = assertIs<ClientStatus.UpgradeRequired>(ClientStatusParser.parse("""{"status":"upgrade_required","enforce_at":"2026-12-08"}"""))
+        assertEquals("2026-12-08", required.details.enforceAt)
         assertIs<ClientStatus.Ok>(ClientStatusParser.parse("""{"status":"ok"}"""))
         assertIs<ClientStatus.UpgradeRequired>(ClientStatusParser.parse("""{"status":"upgrade_required","min_version":"0.4.0"}"""))
         assertIs<ClientStatus.Unknown>(ClientStatusParser.parse("""{"status":"unknown"}"""))
@@ -64,6 +75,20 @@ class ClientStatusTest {
         answer = HttpStatusCode.OK to """{"status":"ok"}"""
         status.check()
         assertIs<ClientStatus.Ok>(status.status.value)
+    }
+
+    @Test
+    fun anOversizedStatusBodyIsRefusedUnreadAndKeepsTheStatus() = runTest {
+        // Reading this body throws, so a null result (not a parse) proves it was never read.
+        val http = HttpClient(
+            MockEngine {
+                val channel = GlobalScope.writer { error("the body was read") }.channel
+                respond(channel, HttpStatusCode.OK, headersOf(HttpHeaders.ContentLength, "1000000"))
+            },
+        )
+        val status = ClientStatusClient(http, "https://x.test/client/status", null)
+        assertNull(status.check())
+        assertIs<ClientStatus.Unknown>(status.status.value)
     }
 
     @Test

@@ -53,6 +53,7 @@ public object Jcs {
             is JsonPrimitive -> when {
                 element.isString -> string(element.content, out)
                 element.content == "true" || element.content == "false" -> out.append(element.content)
+                element.content == "-0" -> out.append('0')
                 SAFE_INTEGER.matches(element.content) -> out.append(element.content)
                 else -> throw IllegalArgumentException("JCS: unsupported number ${element.content}")
             }

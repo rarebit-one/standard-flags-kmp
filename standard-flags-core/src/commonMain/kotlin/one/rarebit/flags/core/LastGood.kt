@@ -38,12 +38,25 @@ public class FlagCache(public val limits: PayloadLimits = PayloadLimits()) {
  * @property body the response body, re-validated when it is loaded.
  * @property contextKey the context it was fetched for (a user or install key);
  *   a stored payload for another context is never applied.
+ * @property client the build it was fetched for (platform, version and build,
+ *   see `ClientInfo.fingerprint` in the ofrep module). The server filters by
+ *   build (`min_client`, deprecated wires), so a payload saved by another build
+ *   is never applied either.
+ * @property format the record's format; a record of a format this version
+ *   doesn't know is ignored.
  */
 @Serializable
 public data class StoredPayload(
     val body: String,
     val contextKey: String? = null,
-)
+    val client: String? = null,
+    val format: Int = FORMAT,
+) {
+    public companion object {
+        /** The format this version writes and reads. */
+        public const val FORMAT: Int = 1
+    }
+}
 
 /**
  * Where the last good payload survives a cold start. Back it with the app's
@@ -107,6 +120,9 @@ public class StringLastGoodStore(
     }
 
     private companion object {
-        val json = Json { ignoreUnknownKeys = true }
+        val json = Json {
+            ignoreUnknownKeys = true
+            encodeDefaults = true
+        }
     }
 }

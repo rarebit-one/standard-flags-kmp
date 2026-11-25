@@ -1,7 +1,7 @@
 package one.rarebit.flags.core
 
 /** A comparison operator in a [VersionRange] or [BuildRange]. */
-public enum class Operator(public val symbol: String) {
+public enum class RangeOperator(public val symbol: String) {
     AtLeast(">="),
     Above(">"),
     AtMost("<="),
@@ -18,12 +18,12 @@ public enum class Operator(public val symbol: String) {
     }
 
     internal companion object {
-        fun of(symbol: String): Operator = entries.first { it.symbol == symbol }
+        fun of(symbol: String): RangeOperator = entries.first { it.symbol == symbol }
     }
 }
 
 /** One `operator operand` test. */
-public data class Comparator<T : Comparable<T>>(val operator: Operator, val operand: T) {
+public data class RangeComparator<T : Comparable<T>>(val operator: RangeOperator, val operand: T) {
     public fun satisfiedBy(value: T): Boolean = operator.holds(value.compareTo(operand))
 
     override fun toString(): String = "${operator.symbol}$operand"
@@ -42,26 +42,26 @@ internal object RangeSyntax {
     private val COMPARATOR_REGEX = Regex(COMPARATOR)
     private val ALTERNATIVE = Regex("[ \\t]*$COMPARATOR(?:[ \\t]+$COMPARATOR)*[ \\t]*")
 
-    fun <T : Comparable<T>> parse(text: String?, operand: (String) -> T?): List<List<Comparator<T>>>? {
+    fun <T : Comparable<T>> parse(text: String?, operand: (String) -> T?): List<List<RangeComparator<T>>>? {
         val cleaned = Version.clean(text) ?: return null
         if (cleaned.length > MAX_LENGTH) return null
-        val alternatives = mutableListOf<List<Comparator<T>>>()
+        val alternatives = mutableListOf<List<RangeComparator<T>>>()
         for (alternative in cleaned.split("||")) {
             if (!ALTERNATIVE.matches(alternative)) return null
-            val comparators = mutableListOf<Comparator<T>>()
+            val comparators = mutableListOf<RangeComparator<T>>()
             for (match in COMPARATOR_REGEX.findAll(alternative)) {
                 val value = operand(match.groupValues[2]) ?: return null
-                comparators += Comparator(Operator.of(match.groupValues[1]), value)
+                comparators += RangeComparator(RangeOperator.of(match.groupValues[1]), value)
             }
             alternatives += comparators
         }
         return alternatives.ifEmpty { null }
     }
 
-    fun <T : Comparable<T>> format(alternatives: List<List<Comparator<T>>>): String =
+    fun <T : Comparable<T>> format(alternatives: List<List<RangeComparator<T>>>): String =
         alternatives.joinToString(" || ") { it.joinToString(" ") }
 
-    fun <T : Comparable<T>> satisfied(alternatives: List<List<Comparator<T>>>, value: T): Boolean =
+    fun <T : Comparable<T>> satisfied(alternatives: List<List<RangeComparator<T>>>, value: T): Boolean =
         alternatives.any { comparators -> comparators.all { it.satisfiedBy(value) } }
 }
 
@@ -80,7 +80,7 @@ internal object RangeSyntax {
  */
 public class VersionRange private constructor(
     /** The alternatives, each a list of comparators that must all hold. */
-    public val alternatives: List<List<Comparator<Version>>>,
+    public val alternatives: List<List<RangeComparator<Version>>>,
 ) {
     /** Whether [version] meets every comparator of at least one alternative. */
     public fun matches(version: Version?): Boolean =
@@ -110,7 +110,7 @@ public class VersionRange private constructor(
  */
 public class BuildRange private constructor(
     /** The alternatives, each a list of comparators that must all hold. */
-    public val alternatives: List<List<Comparator<Long>>>,
+    public val alternatives: List<List<RangeComparator<Long>>>,
 ) {
     /** Whether [build] meets every comparator of at least one alternative. */
     public fun matches(build: Long?): Boolean =

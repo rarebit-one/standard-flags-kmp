@@ -1,6 +1,5 @@
 package one.rarebit.flags.ofrep
 
-import io.ktor.http.fromHttpToGmtDate
 import io.ktor.util.date.GMTDate
 import kotlin.math.min
 import kotlin.math.pow
@@ -44,16 +43,14 @@ public class Backoff(
     public companion object {
         /**
          * A `Retry-After` header as a duration from now: delta-seconds or an
-         * HTTP-date. Null when absent or unreadable; never negative.
+         * HTTP-date in any of the three forms RFC 9110 requires recipients to
+         * accept. Null when absent or unreadable; never negative.
          */
         public fun parseRetryAfter(value: String?, now: GMTDate = GMTDate()): Duration? {
             val text = value?.trim()?.takeIf { it.isNotEmpty() } ?: return null
             if (text.all { it in '0'..'9' }) return text.toLongOrNull()?.seconds
-            return try {
-                (text.fromHttpToGmtDate().timestamp - now.timestamp).coerceAtLeast(0).milliseconds
-            } catch (_: Exception) {
-                null
-            }
+            val at = HttpDate.parse(text, now.year) ?: return null
+            return (at - now.timestamp).coerceAtLeast(0).milliseconds
         }
     }
 }

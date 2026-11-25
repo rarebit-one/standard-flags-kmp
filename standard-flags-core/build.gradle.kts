@@ -28,6 +28,10 @@ val generateConformanceFixtures = tasks.register<GenerateConformanceFixtures>("g
 kotlin {
     explicitApi()
 
+    // The public API is dumped to api/ and checked by `check`; run updateKotlinAbi after an intended change.
+    @OptIn(org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation::class)
+    abiValidation()
+
     jvm()
     android {
         namespace = "one.rarebit.flags.core"

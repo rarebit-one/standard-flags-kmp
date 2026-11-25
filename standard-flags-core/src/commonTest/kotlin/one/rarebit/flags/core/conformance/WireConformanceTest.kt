@@ -179,12 +179,11 @@ class WireConformanceTest {
 
     @Test
     fun laterWireFixturesNeedARunner() {
-        // Gem phase 3c adds wire/client_status.json (the status module's parser) and
-        // 3d adds wire/manifest_check.json (the Gradle contract check). Neither exists
-        // at the pinned commit. When a pin bump vendors one, this fails until its
-        // runner is written, so a new fixture can't sit unrun.
-        val unrun = listOf("wire/client_status.json", "wire/manifest_check.json").filter { it in ConformanceFixtures.files }
-        assertTrue(unrun.isEmpty(), "vendored but not yet run: $unrun (see ClientStatusParser and ManifestContract)")
+        // Gem phase 3d adds wire/manifest_check.json (the Gradle contract check).
+        // It isn't at the pinned commit; when a pin bump vendors it, this fails
+        // until ManifestContract runs it, so a new fixture can't sit unrun.
+        // (wire/client_status.json from 3c already has its runner in the status module.)
+        assertTrue("wire/manifest_check.json" !in ConformanceFixtures.files, "wire/manifest_check.json is vendored but not yet run (see ManifestContract)")
         assertNull(ConformanceFixtures.files["schema/fixture.schema.json"], "the schema isn't a fixture")
     }
 

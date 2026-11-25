@@ -7,9 +7,9 @@
 
 conformance/PIN.json records the repository, the commit and a SHA-256 for every
 vendored file. The check fails when a vendored file differs from the pin, when
-the pin differs from the files upstream at that commit, or when an optional
+the pin differs from the files upstream at that commit, when an optional
 fixture (one a later gem phase adds) exists at the pinned commit but isn't
-vendored. Only the wire-scope files are vendored: clients never evaluate rules.
+vendored, or when conformance/ holds a file the pin doesn't list. Only the wire-scope files are vendored: clients never evaluate rules.
 """
 
 import argparse
@@ -115,6 +115,12 @@ def check(offline):
     for path in REQUIRED:
         if path not in pin["files"]:
             problems.append(f"PIN.json lacks required file {path}")
+    # The build embeds every conformance/**/*.json, so nothing unpinned may sit there.
+    for directory, _, names in os.walk(DIR):
+        for name in names:
+            path = os.path.relpath(os.path.join(directory, name), DIR).replace(os.sep, "/")
+            if path != "PIN.json" and path not in pin["files"]:
+                problems.append(f"conformance/{path} is not in PIN.json; vendor fixtures only with scripts/sync-conformance")
     if not offline:
         for path in REQUIRED + OPTIONAL:
             data = upstream(commit, path)

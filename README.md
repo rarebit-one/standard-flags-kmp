@@ -74,8 +74,10 @@ val client = ClientInfo(platform = "android", version = BuildConfig.VERSION_NAME
 
 val http = HttpClient {
     install(ClientHeaders) { client(client) }   // every API call carries X-Client-*
+    install(HttpTimeout) { requestTimeoutMillis = 15_000 }
     // your auth plugin here; the OFREP endpoint sits behind the app's own authentication
 }
+check(client.isRecognised) { "the server would treat $client as an unknown build" }   // in a debug build or a test
 
 val flags = StandardFlagsClient(
     fetcher = OfrepClient(http, "https://api.example.com/ofrep/v1/evaluate/flags", client),
@@ -100,7 +102,9 @@ val hero: String = flags.value(Flags.HomeHero)
 val read = flags.read(Flags.Chat)   // value, loaded, reason (KILL_SWITCH, STATIC, …), variant, and why it fell back
 ```
 
-On sign-in, sign-out or an account switch, call `flags.setContext(newAccountId)` and then `refresh()`.
+On sign-in, sign-out or an account switch, switch the HTTP client's credentials first, then call `flags.setContext(newAccountId)` and `refresh()`. The old account's values are dropped at once, even while a fetch is still running; its late answer is thrown away. (Calling `setContext` before switching credentials would let a fetch in between store the old account's flags under the new key.)
+
+`ClientInfo.isRecognised` matters because the server never errors on a bad platform or version: it quietly treats the build as unknown, which loses every `min_client` flag.
 
 **Android.** Back the store with DataStore or SharedPreferences, and refresh on foreground, for example from a `ProcessLifecycleOwner` observer's `onStart`:
 
@@ -127,12 +131,15 @@ val lastGoodStore = StringLastGoodStore(
 ## Trust and caching model
 
 - **The server decides; the client only reads.** Payloads carry evaluated values, never rules, allowlists or the names of flags the audience can't see. The client never evaluates targeting.
-- **Validate, then replace.** A payload replaces the last good one only when it passes the [conformance rules](conformance/README.md): at most `PayloadLimits.maxBytes` (the body is refused unread past that) and `maxFlags`, valid UTF-8 JSON, an object with a `flags` array of objects with unique non-empty string keys, and `metadata` an object when present. Anything else is rejected, the last good payload stays, and the client backs off.
+- **Validate, then replace.** A payload replaces the last good one only when it passes the [conformance rules](conformance/README.md): at most `PayloadLimits.maxBytes` and `maxFlags`, strict RFC 8259 JSON in UTF-8 (no `NaN`, unquoted words, single quotes, leading zeros or trailing bytes, and at most 100 levels deep), an object with a `flags` array of objects with unique non-empty string keys, and `metadata` an object when present. Anything else is rejected, the last good payload stays, and the client backs off.
+- **One size limit, enforced while streaming.** The `StandardFlagsClient`'s `PayloadLimits` apply to fetched, seeded and stored payloads alike. The fetch streams the body: a `Content-Length` over the limit is refused without reading, and a body without one stops being read one byte past the limit, so an oversized answer never sits in memory.
 - **Per-flag fallback.** A missing entry, an evaluation failure, an entry without a value, a value of the wrong type, or a string outside the declared `values` all read as the code default with `FlagState.NotLoaded`. One bad flag never affects another.
 - **Ceilings.** A `BooleanFlag(ceiling = true)` reads `default && server value`, so the server can switch it off but never on, for example purchases on a platform whose store rules forbid them.
-- **The cache belongs to one context.** The `LastGoodStore` keeps the body and the `contextKey` it was fetched for. A stored payload for another key is never applied, and `setContext` drops the old values at once and clears the store.
-- **ETags.** The server's ETag hashes the evaluated answer (the audience and entries, RFC 8785), never a user ID or a config revision, so a 304 is only possible when the body would be identical.
-- **Backoff.** Failures, 5xx, 429 and rejected payloads back off exponentially with jitter (`Backoff`, 2 s doubling to 5 min by default), with `Retry-After` honoured as a floor (capped at an hour). A 401 or 403 stops fetching until `setContext`.
+- **The cache belongs to one context and one build.** The `LastGoodStore` keeps the body, the `contextKey` it was fetched for and the build (`ClientInfo.fingerprint`: platform, version, build). A stored payload for another key, or saved by another build, is never applied: the server filters by build (`min_client`, deprecated wires), so an old build's answer could withhold or serve the wrong wires. After an upgrade the app starts on code defaults, and the first payload for the new build applies live. `setContext` drops the old values at once and clears a stored payload that belongs to another context. A store that throws never breaks the client: the failure shows in `flags.storeError`, and the in-memory values stay.
+- **Kill switches never wait on the disk.** A fresh payload is applied (kill switches live) before it is saved. Only a saved payload becomes the pending one and supplies the next If-None-Match, so after a failed save the next fetch gets the full answer again rather than a 304.
+- **ETags.** The server's ETag hashes the evaluated answer (the audience and entries, RFC 8785), never a user ID or a config revision, so a 304 is only possible when the body would be identical. A `metadata.version` that isn't a valid entity tag is ignored (no If-None-Match is sent), and three client-side failures in a row drop the ETag, so a bad value can't wedge fetching.
+- **Backoff.** Failures, 5xx, 429 and rejected payloads back off exponentially with jitter (`Backoff`, 2 s doubling to 5 min by default), with `Retry-After` (seconds or any HTTP-date form) honoured as a floor, capped at an hour. A 401 or 403 stops fetching until `setContext`.
+- **No lock across I/O.** The client's state lock is never held during a fetch or a store call. Concurrent `refresh()` calls share one fetch. Install a request timeout on the HTTP client all the same (`HttpTimeout`), so a stalled request doesn't hold up the next refresh.
 
 ## When fresh values apply
 
@@ -153,13 +160,13 @@ scope.launch { status.check() }   // at launch and on foreground
 status.status.collect {
     when (it) {
         is ClientStatus.UpgradeRequired -> showBlockingUpgrade(it.details.storeUrl)
-        is ClientStatus.UpgradeRecommended -> showNudge(it.details.storeUrl, enforceAt = it.enforceAt)
+        is ClientStatus.UpgradeRecommended -> showNudge(it.details.storeUrl, enforceAt = it.enforceAt)   // a YYYY-MM-DD date, or null
         is ClientStatus.Ok, is ClientStatus.Unknown -> Unit
     }
 }
 ```
 
-A failed check keeps the last known status, and an unknown build is never blocked. `UpgradeRequiredDetector` flips the status when any API call answers 426 with the server's `client_upgrade_required` error.
+A failed check keeps the last known status, and an unknown build is never blocked. `enforceAt` is the UTC date enforcement starts (`YYYY-MM-DD`), not an instant. `UpgradeRequiredDetector` flips the status when any API call answers 426 with the server's `client_upgrade_required` error; a bare 426 is ignored. It reads the 426 body, which an ordinary Ktor call keeps for the app too, but a streaming call (`prepare*().execute { }`) doesn't.
 
 ## OpenFeature
 
@@ -168,7 +175,9 @@ OpenFeatureAPI.setProviderAndWait(StandardFlagsProvider(flags), ImmutableContext
 val chat = OpenFeatureAPI.getClient().getBooleanValue("chat_enabled", false)
 ```
 
-The provider reads through the client's declarations (ceilings and allowed values hold), maps evaluation failures to OpenFeature error codes, passes the server's reason through (including `KILL_SWITCH`), and emits a configuration-changed event when the values code reads change. A new targeting key calls `setContext`.
+The provider reads through the client's declarations, so allowed values hold, and a ceiling flag is capped by its declared default whatever default the caller passes. It maps evaluation failures to OpenFeature error codes, passes the server's reason through (including `KILL_SWITCH`), and emits a configuration-changed event naming the wires that changed.
+
+The targeting key is the client's context key: `initialize` hands it to `setContext` before loading, so the payload saved for it is the launch value, and a new targeting key calls `setContext`. Build the client with the same key, or none. The first fetch runs in the provider's scope: `initialize` waits up to `initialFetchTimeout`, and a slower fetch still lands afterwards.
 
 ## Contract check
 
@@ -181,16 +190,17 @@ standardFlags {
     manifest = rootProject.file("contracts/flags.manifest.json")
     audience = "mobile"
     wire("chat_enabled", "boolean")
-    wire("homeHero", "string")
-    // or wiresFile = file("flags.wires.json"), a JSON object of wire → type
+    stringWire("homeHero", "control", "savings")   // with the values the app understands
+    // or wiresFile = file("flags.wires.json"):
+    // {"chat_enabled": "boolean", "homeHero": {"type": "string", "values": ["control", "savings"]}}
 }
 ```
 
-`./gradlew check` then runs `checkFlagsManifest`, which fails when a wire isn't exposed to the audience (naming any audience that does see it) or its type differs, and warns when a wire is only served by a deprecated tombstone, with its end date (`failOnDeprecated = true` makes that an error too). It reads manifest versions 1 and 2.
+`./gradlew check` then runs `checkFlagsManifest`. It fails when a wire isn't exposed to the audience (naming any audience that does see it), when its type differs, or when the server can send a string value the app doesn't declare (the app would read its code default). It warns when the app declares a value the server never sends, and when a wire is only served by a deprecated tombstone, with its end date (`failOnDeprecated = true` makes that an error too). It reads manifest versions 1 and 2.
 
 ## Conformance
 
-`conformance/` vendors the gem's wire-scope fixtures at the commit pinned in `conformance/PIN.json`. The core module's tests run them on the JVM, Android and the iOS simulator: version and build ranges, payload in → reads out, and every golden delivery body and its ETag. `scripts/sync-conformance --ref main` moves the pin; CI runs `scripts/sync-conformance --check`.
+`conformance/` vendors the gem's wire-scope fixtures at the commit pinned in `conformance/PIN.json`. The tests run them on the JVM, Android and the iOS simulator: version and build ranges, payload in → reads out (through `FlagCache` and again through `StandardFlagsClient`), every golden delivery body and its ETag, and `wire/client_status.json` once it is vendored. `scripts/sync-conformance --ref main` moves the pin; CI runs `scripts/sync-conformance --check`, which also refuses any file in `conformance/` the pin doesn't list.
 
 ## Development
 
@@ -198,7 +208,10 @@ standardFlags {
 ./gradlew check                 # every test; on macOS this includes the iOS simulator
 ./gradlew iosSimulatorTests     # only the iOS simulator tests
 ./gradlew publishToMavenLocal   # all modules into ~/.m2
+./gradlew updateKotlinAbi       # after an intended public API change; check fails on any other
 ```
+
+The public API of each Kotlin module is recorded in its `api/` folder (Kotlin's ABI validation), and `check` fails when it changes unexpectedly.
 
 Releases go through CI: a `v*` tag matching `VERSION_NAME` publishes to Maven Central. See [AGENTS.md](AGENTS.md).
 

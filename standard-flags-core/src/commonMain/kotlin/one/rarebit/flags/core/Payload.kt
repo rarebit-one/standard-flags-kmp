@@ -106,7 +106,7 @@ public sealed interface PayloadResult {
  */
 public class FlagPayload internal constructor(
     public val entries: Map<String, FlagEntry>,
-    /** `metadata.version` when it is a non-empty string. */
+    /** `metadata.version` when it is a string [isUsableVersion] accepts, else null. */
     public val version: String?,
     /** The body as received. */
     public val body: String,
@@ -143,13 +143,24 @@ public class FlagPayload internal constructor(
             return parseText(text, limits)
         }
 
+        /**
+         * Whether a `metadata.version` can be sent back as an entity tag: 1 to
+         * 256 visible ASCII characters other than `"`. The server sends 64 hex
+         * digits. Anything else is ignored, so no If-None-Match is sent rather
+         * than a header the HTTP stack refuses on every request.
+         */
+        public fun isUsableVersion(version: String): Boolean =
+            version.length in 1..256 && version.all { it.code == 0x21 || it.code in 0x23..0x7e }
+
         /** Validates [text]; its UTF-8 size is measured against [PayloadLimits.maxBytes]. */
         public fun parse(text: String, limits: PayloadLimits = PayloadLimits()): PayloadResult =
             parse(text.encodeToByteArray(), limits)
 
         private fun parseText(text: String, limits: PayloadLimits): PayloadResult {
             // A byte-order mark makes the body not JSON (RFC 8259 §8.1).
-            if (text.startsWith('﻿')) return PayloadResult.Rejected(RejectReason.NotJson)
+            if (text.startsWith('\uFEFF')) return PayloadResult.Rejected(RejectReason.NotJson)
+            // kotlinx keeps unquoted tokens (tru, NaN, 'x') as literals; check the grammar first.
+            if (!StrictJson.isValid(text)) return PayloadResult.Rejected(RejectReason.NotJson)
             val document = try {
                 json.parseToJsonElement(text)
             } catch (_: SerializationException) {
@@ -173,7 +184,7 @@ public class FlagPayload internal constructor(
                 if (key in entries) return PayloadResult.Rejected(RejectReason.DuplicateKey)
                 entries[key] = FlagEntry.of(entry, key)
             }
-            val version = metadata?.string("version")?.ifEmpty { null }
+            val version = metadata?.string("version")?.takeIf(::isUsableVersion)
             return PayloadResult.Accepted(FlagPayload(entries, version, text))
         }
     }

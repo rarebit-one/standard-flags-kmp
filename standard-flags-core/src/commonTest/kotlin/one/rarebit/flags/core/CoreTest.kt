@@ -53,6 +53,7 @@ class CoreTest {
         )
         assertEquals("{\"a\":[true,12],\"b\":\"Grüße   \\u0001 \\\" / \\\\ \u007f\\n\"}", Jcs.canonicalize(document))
         assertFailsWith<IllegalArgumentException> { Jcs.canonicalize(JsonPrimitive(1.5)) }
+        assertEquals("[0,0]", Jcs.canonicalize(JsonArray(listOf(JsonPrimitive(0), kotlinx.serialization.json.Json.parseToJsonElement("-0")))), "RFC 8785 writes -0 as 0")
         // The example in the server's docs.
         val entries = JsonArray(listOf(JsonObject(mapOf("key" to JsonPrimitive("a"), "reason" to JsonPrimitive("DEFAULT"), "value" to JsonPrimitive(true), "variant" to JsonPrimitive("on")))))
         assertEquals(Sha256.hex("{\"audience\":\"mobile\",\"flags\":[{\"key\":\"a\",\"reason\":\"DEFAULT\",\"value\":true,\"variant\":\"on\"}]}".encodeToByteArray()), Etag.of("mobile", entries))
@@ -95,8 +96,9 @@ class CoreTest {
         var value: String? = null
         val store = StringLastGoodStore(read = { value }, write = { value = it })
         assertNull(store.load())
-        store.save(StoredPayload("""{"flags":[]}""", "acct"))
-        assertEquals(StoredPayload("""{"flags":[]}""", "acct"), store.load())
+        store.save(StoredPayload("""{"flags":[]}""", "acct", "ios/1.4.0/212"))
+        assertEquals(StoredPayload("""{"flags":[]}""", "acct", "ios/1.4.0/212"), store.load())
+        assertTrue(value!!.contains("\"format\":1"), "the record carries its format: $value")
         value = "not json"
         assertNull(store.load())
         store.clear()
