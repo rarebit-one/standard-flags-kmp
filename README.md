@@ -200,6 +200,11 @@ Optionally, point `baselineManifest` at the manifest your shipped builds were ma
 
 `./gradlew check` then runs `checkFlagsManifest`. It fails when a wire isn't exposed to the audience (naming any audience that does see it), when its type differs, or when the server can send a string value the app doesn't declare (the app would read its code default). It warns when the app declares a value the server never sends, and when a wire is only served by a deprecated tombstone, with its end date (`failOnDeprecated = true` makes that an error too). Once that date has passed the server no longer sends the wire, so reading it fails. Dates are UTC and computed when the task runs, even from the configuration cache; `-PstandardFlags.today=YYYY-MM-DD` reproduces a check on another day. It reads manifest versions 1 and 2.
 
+**The check depends on the date.** Reading a wire whose tombstone `until` date has passed is an error, so a build that passed yesterday can fail today with nothing in the repository changed. When it does:
+
+- Stop reading the wire: remove it from the app's declarations (and the code that reads it). The server no longer sends it, so the app already gets its code default.
+- To rebuild an old commit as it built at the time (a release branch, a reproducible build), pass the date it was built on: `./gradlew check -PstandardFlags.today=2026-01-15`. Don't use this to keep shipping a wire past its end date.
+
 ## Conformance
 
 `conformance/` vendors the gem's wire-scope fixtures at the commit pinned in `conformance/PIN.json`. The tests run them on the JVM, Android and the iOS simulator: version and build ranges, payload in → reads out (through `FlagCache` and again through `StandardFlagsClient`), every golden delivery body and its ETag, every `wire/client_status.json` status body, and every `wire/manifest_check.json` case through the Gradle plugin's `ManifestCheck`. A test fails if a vendored fixture has no runner. `scripts/sync-conformance --ref main` moves the pin; CI runs `scripts/sync-conformance --check`, which also refuses any file in `conformance/` the pin doesn't list.

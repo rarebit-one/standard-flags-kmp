@@ -38,11 +38,24 @@ import kotlin.time.TimeSource
  * @property firstPayloadAppliesLive when nothing was loaded at launch (a
  *   first run, a new build, or right after the context changed), the first
  *   payload applies at once instead of waiting a launch.
+ *
+ * A regular class, not a data class, so a setting can be added later without
+ * breaking binary compatibility (no `copy` or `componentN` to change).
  */
-public data class ApplyPolicy(
-    val freshValuesAtNextLaunch: Boolean = true,
-    val firstPayloadAppliesLive: Boolean = true,
-)
+public class ApplyPolicy(
+    public val freshValuesAtNextLaunch: Boolean = true,
+    public val firstPayloadAppliesLive: Boolean = true,
+) {
+    override fun equals(other: Any?): Boolean =
+        other is ApplyPolicy &&
+            freshValuesAtNextLaunch == other.freshValuesAtNextLaunch &&
+            firstPayloadAppliesLive == other.firstPayloadAppliesLive
+
+    override fun hashCode(): Int = 31 * freshValuesAtNextLaunch.hashCode() + firstPayloadAppliesLive.hashCode()
+
+    override fun toString(): String =
+        "ApplyPolicy(freshValuesAtNextLaunch=$freshValuesAtNextLaunch, firstPayloadAppliesLive=$firstPayloadAppliesLive)"
+}
 
 /** The outcome of the last fetch, for diagnostics. */
 public sealed interface FetchStatus {

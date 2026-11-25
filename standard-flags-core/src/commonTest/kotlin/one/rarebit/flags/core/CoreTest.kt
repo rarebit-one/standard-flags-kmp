@@ -112,4 +112,15 @@ class CoreTest {
         assertEquals(PayloadResult.Rejected(RejectReason.TooLarge), cache.receive(ByteArray(65) { ' '.code.toByte() }))
         assertEquals(FlagState.On, cache.read(BooleanFlag("a", false)).state)
     }
+
+    @Test
+    fun payloadLimitsCompareByValue() {
+        val limits = PayloadLimits(maxBytes = 64, maxFlags = 8, maxNesting = 10)
+        assertEquals(PayloadLimits(maxBytes = 64, maxFlags = 8, maxNesting = 10), limits)
+        assertEquals(PayloadLimits(maxBytes = 64, maxFlags = 8, maxNesting = 10).hashCode(), limits.hashCode())
+        assertFalse(limits == PayloadLimits(maxBytes = 64, maxFlags = 8, maxNesting = 11))
+        assertEquals(PayloadLimits(), PayloadLimits(256 * 1024, 2048, PayloadLimits.DEFAULT_MAX_NESTING))
+        assertEquals("PayloadLimits(maxBytes=64, maxFlags=8, maxNesting=10)", limits.toString())
+        assertFailsWith<IllegalArgumentException> { PayloadLimits(maxNesting = PayloadLimits.MAX_NESTING_CAP + 1) }
+    }
 }

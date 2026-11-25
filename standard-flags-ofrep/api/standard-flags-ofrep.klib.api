@@ -201,9 +201,6 @@ final class one.rarebit.flags.ofrep/ApplyPolicy { // one.rarebit.flags.ofrep/App
     final val freshValuesAtNextLaunch // one.rarebit.flags.ofrep/ApplyPolicy.freshValuesAtNextLaunch|{}freshValuesAtNextLaunch[0]
         final fun <get-freshValuesAtNextLaunch>(): kotlin/Boolean // one.rarebit.flags.ofrep/ApplyPolicy.freshValuesAtNextLaunch.<get-freshValuesAtNextLaunch>|<get-freshValuesAtNextLaunch>(){}[0]
 
-    final fun component1(): kotlin/Boolean // one.rarebit.flags.ofrep/ApplyPolicy.component1|component1(){}[0]
-    final fun component2(): kotlin/Boolean // one.rarebit.flags.ofrep/ApplyPolicy.component2|component2(){}[0]
-    final fun copy(kotlin/Boolean = ..., kotlin/Boolean = ...): one.rarebit.flags.ofrep/ApplyPolicy // one.rarebit.flags.ofrep/ApplyPolicy.copy|copy(kotlin.Boolean;kotlin.Boolean){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // one.rarebit.flags.ofrep/ApplyPolicy.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // one.rarebit.flags.ofrep/ApplyPolicy.hashCode|hashCode(){}[0]
     final fun toString(): kotlin/String // one.rarebit.flags.ofrep/ApplyPolicy.toString|toString(){}[0]

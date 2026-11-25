@@ -69,20 +69,41 @@ public data class FlagEntry(
     }
 }
 
-/** Limits a payload must meet before it replaces the last good one. */
-public data class PayloadLimits(
+/**
+ * Limits a payload must meet before it replaces the last good one.
+ *
+ * A regular class, not a data class, so a limit can be added later without
+ * breaking binary compatibility (no `copy` or `componentN` to change).
+ */
+public class PayloadLimits(
     /** The most bytes a payload may have. A payload of exactly this size is accepted. */
-    val maxBytes: Int = 256 * 1024,
+    public val maxBytes: Int = 256 * 1024,
     /** The most entries `flags` may hold. */
-    val maxFlags: Int = 2048,
+    public val maxFlags: Int = 2048,
     /** The most nested containers (objects and arrays, the top level counting as 1), at most [MAX_NESTING_CAP]. */
-    val maxNesting: Int = DEFAULT_MAX_NESTING,
+    public val maxNesting: Int = DEFAULT_MAX_NESTING,
 ) {
     init {
         require(maxBytes > 0) { "maxBytes must be positive" }
         require(maxFlags >= 0) { "maxFlags must not be negative" }
         require(maxNesting in 1..MAX_NESTING_CAP) { "maxNesting must be between 1 and $MAX_NESTING_CAP" }
     }
+
+    override fun equals(other: Any?): Boolean =
+        other is PayloadLimits &&
+            maxBytes == other.maxBytes &&
+            maxFlags == other.maxFlags &&
+            maxNesting == other.maxNesting
+
+    override fun hashCode(): Int {
+        var result = maxBytes
+        result = 31 * result + maxFlags
+        result = 31 * result + maxNesting
+        return result
+    }
+
+    override fun toString(): String =
+        "PayloadLimits(maxBytes=$maxBytes, maxFlags=$maxFlags, maxNesting=$maxNesting)"
 
     public companion object {
         /** The server's own JSON parser's `max_nesting`. */

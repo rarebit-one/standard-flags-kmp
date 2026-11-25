@@ -599,4 +599,15 @@ class StandardFlagsClientTest {
         assertIs<PayloadResult.Rejected>(flags.seed("nope"))
         assertEquals(FlagState.On, flags.state(chat))
     }
+
+    @Test
+    fun applyPolicyComparesByValue() {
+        assertEquals(ApplyPolicy(), ApplyPolicy(freshValuesAtNextLaunch = true, firstPayloadAppliesLive = true))
+        assertEquals(ApplyPolicy(false, true).hashCode(), ApplyPolicy(false, true).hashCode())
+        assertTrue(ApplyPolicy(false, true) != ApplyPolicy(true, false))
+        assertEquals(
+            "ApplyPolicy(freshValuesAtNextLaunch=false, firstPayloadAppliesLive=true)",
+            ApplyPolicy(freshValuesAtNextLaunch = false).toString(),
+        )
+    }
 }
