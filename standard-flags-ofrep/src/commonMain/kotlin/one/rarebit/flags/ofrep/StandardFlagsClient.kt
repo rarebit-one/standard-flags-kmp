@@ -31,6 +31,12 @@ import kotlin.time.TimeSource
 /**
  * When fresh values reach code.
  *
+ * A regular class, not a data class, so a setting can be added later without
+ * changing `copy` or `componentN`. When adding one, keep the previous
+ * constructor as a secondary constructor (for example
+ * `@Deprecated(level = DeprecationLevel.HIDDEN)`), so binaries built against
+ * an earlier version still link.
+ *
  * @property freshValuesAtNextLaunch fresh values are saved and apply at the
  *   next launch, so a screen never changes under the user. Kill switches
  *   (reason `KILL_SWITCH`, or a [BooleanFlag.killSwitch]) always apply live.
@@ -39,10 +45,20 @@ import kotlin.time.TimeSource
  *   first run, a new build, or right after the context changed), the first
  *   payload applies at once instead of waiting a launch.
  */
-public data class ApplyPolicy(
-    val freshValuesAtNextLaunch: Boolean = true,
-    val firstPayloadAppliesLive: Boolean = true,
-)
+public class ApplyPolicy(
+    public val freshValuesAtNextLaunch: Boolean = true,
+    public val firstPayloadAppliesLive: Boolean = true,
+) {
+    override fun equals(other: Any?): Boolean =
+        other is ApplyPolicy &&
+            freshValuesAtNextLaunch == other.freshValuesAtNextLaunch &&
+            firstPayloadAppliesLive == other.firstPayloadAppliesLive
+
+    override fun hashCode(): Int = 31 * freshValuesAtNextLaunch.hashCode() + firstPayloadAppliesLive.hashCode()
+
+    override fun toString(): String =
+        "ApplyPolicy(freshValuesAtNextLaunch=$freshValuesAtNextLaunch, firstPayloadAppliesLive=$firstPayloadAppliesLive)"
+}
 
 /** The outcome of the last fetch, for diagnostics. */
 public sealed interface FetchStatus {

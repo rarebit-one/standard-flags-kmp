@@ -26,6 +26,7 @@ import kotlinx.serialization.json.jsonPrimitive
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertNull
@@ -170,6 +171,19 @@ class OfrepClientTest {
         assertFalse(ClientInfo("ios").isRecognised)
         assertEquals("android/0.5.0/3", ClientInfo("Android", "0.5.0", 3).fingerprint)
         assertEquals("ios//", ClientInfo("ios").fingerprint)
+    }
+
+    @Test
+    fun clientInfoComparesByValue() {
+        val info = ClientInfo("android", "0.5.0", 381)
+        assertEquals(ClientInfo("android", "0.5.0", 381), info)
+        assertEquals(ClientInfo("android", "0.5.0", 381).hashCode(), info.hashCode())
+        assertTrue(info != ClientInfo("android", "0.5.0", 382))
+        assertEquals(ClientInfo("ios"), ClientInfo("ios", version = null, build = null))
+        assertEquals("ClientInfo(platform=android, version=0.5.0, build=381)", info.toString())
+        assertEquals("ClientInfo(platform=ios, version=null, build=null)", ClientInfo("ios").toString())
+        assertFailsWith<IllegalArgumentException> { ClientInfo(" ") }
+        assertFailsWith<IllegalArgumentException> { ClientInfo("android", "1.0.0", -1) }
     }
 
     @Test

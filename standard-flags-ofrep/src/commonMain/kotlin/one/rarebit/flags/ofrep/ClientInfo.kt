@@ -16,14 +16,20 @@ import one.rarebit.flags.core.Version
  * unknown. So a version like `1.4.0 (381)` ships without complaint and quietly
  * loses every `min_client` flag. Check [isRecognised] in a debug build or a test.
  *
+ * A regular class, not a data class, so a field can be added later without
+ * changing `copy` or `componentN`. When adding one, keep the previous
+ * constructor as a secondary constructor (for example
+ * `@Deprecated(level = DeprecationLevel.HIDDEN)`), so binaries built against
+ * an earlier version still link.
+ *
  * @property platform `android`, `ios`, `web` or `desktop` (the server's default allowlist).
  * @property version the app's SemVer version, such as `0.5.0`.
  * @property build the build number, a non-negative integer.
  */
-public data class ClientInfo(
-    val platform: String,
-    val version: String? = null,
-    val build: Long? = null,
+public class ClientInfo(
+    public val platform: String,
+    public val version: String? = null,
+    public val build: Long? = null,
 ) {
     init {
         require(platform.isNotBlank()) { "platform must not be blank" }
@@ -46,6 +52,18 @@ public data class ClientInfo(
         if (version != null && !headers.contains(HEADER_VERSION)) headers.append(HEADER_VERSION, version)
         if (build != null && !headers.contains(HEADER_BUILD)) headers.append(HEADER_BUILD, build.toString())
     }
+
+    override fun equals(other: Any?): Boolean =
+        other is ClientInfo && platform == other.platform && version == other.version && build == other.build
+
+    override fun hashCode(): Int {
+        var result = platform.hashCode()
+        result = 31 * result + (version?.hashCode() ?: 0)
+        result = 31 * result + (build?.hashCode() ?: 0)
+        return result
+    }
+
+    override fun toString(): String = "ClientInfo(platform=$platform, version=$version, build=$build)"
 
     public companion object {
         public const val HEADER_PLATFORM: String = "X-Client-Platform"

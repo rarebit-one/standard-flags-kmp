@@ -317,10 +317,6 @@ final class one.rarebit.flags.core/PayloadLimits { // one.rarebit.flags.core/Pay
     final val maxNesting // one.rarebit.flags.core/PayloadLimits.maxNesting|{}maxNesting[0]
         final fun <get-maxNesting>(): kotlin/Int // one.rarebit.flags.core/PayloadLimits.maxNesting.<get-maxNesting>|<get-maxNesting>(){}[0]
 
-    final fun component1(): kotlin/Int // one.rarebit.flags.core/PayloadLimits.component1|component1(){}[0]
-    final fun component2(): kotlin/Int // one.rarebit.flags.core/PayloadLimits.component2|component2(){}[0]
-    final fun component3(): kotlin/Int // one.rarebit.flags.core/PayloadLimits.component3|component3(){}[0]
-    final fun copy(kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ...): one.rarebit.flags.core/PayloadLimits // one.rarebit.flags.core/PayloadLimits.copy|copy(kotlin.Int;kotlin.Int;kotlin.Int){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // one.rarebit.flags.core/PayloadLimits.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // one.rarebit.flags.core/PayloadLimits.hashCode|hashCode(){}[0]
     final fun toString(): kotlin/String // one.rarebit.flags.core/PayloadLimits.toString|toString(){}[0]

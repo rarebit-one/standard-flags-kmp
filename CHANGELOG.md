@@ -6,6 +6,12 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- `PayloadLimits` (core), `ApplyPolicy` and `ClientInfo` (ofrep) are regular classes rather than data classes, so a field can be added later without changing `copy` or `componentN` (a new constructor parameter still needs the old constructor kept, which AGENTS.md now requires). Construction, properties, equality and `toString` are unchanged; `copy` and `componentN` are gone.
+- Result and value types (`FlagEntry`, `FlagRead`, `StatusDetails`, `StoredPayload` and the status and outcome cases) stay data classes, documented as types that may gain fields: read them by property name, don't destructure them.
+- README: the contract check depends on the date. A build can start failing once a tombstone's `until` date passes (remove the wire), or, with `baselineManifest`, once a tombstone's `until` the server moved earlier passes (move the baseline, or restore the date); `-PstandardFlags.today` rebuilds an old commit as it was. The README also states the Gradle plugin's supported surface (the plugin id, the `standardFlags { }` block, the task and `standardFlags.today`) and the compatibility policy.
+
 ### Added
 
 - `standard-flags-core`: the OFREP bulk wire model with strict RFC 8259 parsing (tolerant of unknown fields) and payload validation (`PayloadLimits`, `FlagCache`); `BooleanFlag`/`StringFlag` declarations with ceilings, allowed values and declared kill switches; `FlagState` (On, Off, NotLoaded) and `FlagRead`; SemVer `Version`, `VersionRange` and `BuildRange` in the neutral syntax; `LastGoodStore` with in-memory and string adapters, keyed by context and build; the RFC 8785 ETag (`Etag`, `Jcs`, `Sha256`).

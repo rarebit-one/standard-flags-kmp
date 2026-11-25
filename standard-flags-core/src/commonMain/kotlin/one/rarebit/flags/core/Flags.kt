@@ -69,6 +69,9 @@ public enum class FallbackCause {
 /**
  * What code reads for one flag.
  *
+ * A result type: later versions may add fields, so read its properties by
+ * name. Don't destructure it or rely on its `copy` or constructor signature.
+ *
  * @property value the value to use: the server's, or the code default.
  * @property loaded whether [value] came from the server (a ceiling that capped
  *   the server's value still counts as loaded).

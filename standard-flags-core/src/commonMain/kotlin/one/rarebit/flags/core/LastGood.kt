@@ -35,6 +35,10 @@ public class FlagCache(public val limits: PayloadLimits = PayloadLimits()) {
 /**
  * A payload as the [LastGoodStore] keeps it.
  *
+ * Construct it with named arguments and read its properties by name:
+ * destructuring (`val (body, key) = stored`) isn't supported, because fields
+ * may be added in later versions.
+ *
  * @property body the response body, re-validated when it is loaded.
  * @property contextKey the context it was fetched for (a user or install key);
  *   a stored payload for another context is never applied.
