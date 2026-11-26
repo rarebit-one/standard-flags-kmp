@@ -17,8 +17,8 @@ jobs:
     secrets: inherit
 
   # The outcome goes to the run summary. A failed release also surfaces in
-  # Rarebit HQ's Decide tab (rarebit-sre decisions exporter reads the latest
-  # release.yml run on a v* tag), so a failure never goes silent.
+  # Rarebit HQ's decisions feed, which reads the latest release.yml run on a
+  # v* tag, so a failure never goes silent.
   summary:
     permissions: {}
     needs: release
